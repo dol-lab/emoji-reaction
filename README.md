@@ -1,15 +1,15 @@
 # Emoji Reactions
 
-This is work in progress.
+**Important:** This is work in progress. Check issues for todos.
 
-Check issues for todos.
+A Wordpress plugin which allows emoji reactions on posts and comments.
 
 ---
 
 Apply this filter in your theme to get the emoji buttons:
 
 ```
-echo apply_filters('emoji_reactions_buttons', array $args);
+apply_filters('emoji_reactions_buttons', array $args);
 ```
 
 **$args**
