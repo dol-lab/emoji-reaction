@@ -1,0 +1,12 @@
+{
+	"name": "dol-lab/emoji-reactions",
+	"license": "GPL-2.0-or-later",
+	"description": "A WordPress Plugin which adds emoji reactions to posts & comments.",
+	"type": "wordpress-plugin",
+	"keywords": [
+		"wordpress", "wp", "spaces", "community"
+	],
+	"support": {
+		"issues": "https://github.com/dol-lab/emoji-reactions/issues"
+	}
+}
