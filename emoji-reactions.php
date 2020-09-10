@@ -16,7 +16,7 @@
  * Plugin Name:       Emoji Reactions
  * Plugin URI:        https://github.com/dol-lab/emoji-reactions
  * Description:       Adds emoji reactions to posts & comments.
- * Version:           0.0.1
+ * Version:           0.0.2
  * Author:            Digital Open Learning Lab
  * Author URI:        https://spaces.kisd.de
  * License:           GPL-2.0+
@@ -33,7 +33,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Currently plugin version.
  */
-define( 'EMOJI_REACTIONS_VERSION', '0.0.1' );
+define( 'EMOJI_REACTIONS_VERSION', '0.0.2' );
 
 /**
  * The code that runs during plugin activation.

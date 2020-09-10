@@ -12,6 +12,12 @@
  * @subpackage Emoji_Reactions/public/partials
  */
 ?>
+
+<?php
+//debug
+var_dump($likes);
+?>
+
 <div class="emoji-reactions-wrapper" data-object-id='<?= $ID ?>' data-object-type='<?= $type ?>'>
     <button class="emoji-reactions-button gray" data-emoji="👍" name="thumbs up"></button>
     <button class="emoji-reactions-button gray" data-emoji="❤️" name="heart"></button>
