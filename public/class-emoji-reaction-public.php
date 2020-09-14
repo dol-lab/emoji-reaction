@@ -133,6 +133,7 @@ class Emoji_Reaction_Public {
 		if ($_POST['unlike'] === 'true') {
 			
 			echo 'User ' . $user_id . ' unliked ' . $emoji;
+			$this->delete_like($object_id, $object_type, $emoji, $user_id);
 
 		} else {
 
@@ -207,6 +208,33 @@ class Emoji_Reaction_Public {
 	 * @return 	bool 		True on success, false on failure.
 	 */
 	private function delete_like($object_id, $object_type, $emoji, $user_id) {
-		// do something
+		$likes = !empty($this->get_likes($object_id, $object_type)) ? $this->get_likes($object_id, $object_type) : [];
+
+		if (($key = array_search($user_id, $likes[$emoji])) !== false) {
+			unset($likes[$emoji][$key]);
+		} else {
+			return false;
+		}
+
+		// clean up empty arrays
+		if (empty($likes[$emoji])) {
+			unset($likes[$emoji]);
+		}
+
+		if (empty($likes)) {
+			if ($object_type == 'comment') {
+				$update = delete_comment_meta( $object_id, $this->meta_key );
+			} else {
+				$update = delete_post_meta( $object_id, $this->meta_key );
+			}
+		} else {
+			if ($object_type == 'comment') {
+				$update = update_comment_meta( $object_id, $this->meta_key, $likes );
+			} else {
+				$update = update_post_meta( $object_id, $this->meta_key, $likes );
+			}
+		}
+
+		return $update;
 	}
 }
