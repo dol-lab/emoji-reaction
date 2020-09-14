@@ -9,8 +9,8 @@
  * @link       Author uri
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  */
 
 /**
@@ -20,11 +20,11 @@
  * so that it is ready for translation.
  *
  * @since      0.0.1
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  * @author     Author name <Author mail>
  */
-class Emoji_Reactions_i18n {
+class Emoji_Reaction_i18n {
 
 
 	/**
@@ -35,7 +35,7 @@ class Emoji_Reactions_i18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			'emoji-reactions',
+			'emoji-reaction',
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

@@ -3,29 +3,29 @@
  * included in this file.
  */
 
-.emoji-reactions-wrapper button.emoji-reactions-button {
+.emoji-reaction-wrapper button.emoji-reaction-button {
     background: #eee;
     border: 1px solid #999;
     cursor: pointer;
     padding: 5px 10px 5px 10px;
     transition: 0.5s;
 }
-.emoji-reactions-wrapper button.emoji-reactions-button:hover {
+.emoji-reaction-wrapper button.emoji-reaction-button:hover {
     background: #ccc;
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
 }
 
-.emoji-reactions-wrapper button.emoji-reactions-button.gray {
+.emoji-reaction-wrapper button.emoji-reaction-button.gray {
     -webkit-filter: grayscale(100%);
     filter: grayscale(100%);
 }
-.emoji-reactions-wrapper button.emoji-reactions-button.gray:hover {
+.emoji-reaction-wrapper button.emoji-reaction-button.gray:hover {
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
 }
 
-.emoji-reactions-wrapper button.emoji-reactions-button:before {
+.emoji-reaction-wrapper button.emoji-reaction-button:before {
     content: attr(data-emoji);
     display: block;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Segoe UI Symbol", "Android Emoji", EmojiSymbols, "EmojiOne Mozilla" !important;

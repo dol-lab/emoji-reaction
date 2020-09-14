@@ -6,8 +6,8 @@
  * @link       Author uri
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  */
 
 /**
@@ -17,11 +17,11 @@
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  * @author     Author name <Author mail>
  */
-class Emoji_Reactions_Loader {
+class Emoji_Reaction_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

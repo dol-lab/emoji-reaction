@@ -22,7 +22,7 @@
  * @link       Author uri
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
+ * @package    Emoji_Reaction
  */
 
 // If uninstall not called from WordPress, then exit.

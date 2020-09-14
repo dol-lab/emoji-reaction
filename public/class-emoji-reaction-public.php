@@ -6,8 +6,8 @@
  * @link       Author uri
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/public
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/public
  */
 
 /**
@@ -16,11 +16,11 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the public-facing stylesheet and JavaScript.
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/public
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/public
  * @author     Author name <Author mail>
  */
-class Emoji_Reactions_Public {
+class Emoji_Reaction_Public {
 
 	/**
 	 * The ID of this plugin.
@@ -72,7 +72,7 @@ class Emoji_Reactions_Public {
 	 */
 	public function enqueue_styles() {
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reactions-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 
 	}
 
@@ -83,9 +83,9 @@ class Emoji_Reactions_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reactions-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery' ), $this->version, false );
 
-		wp_localize_script( $this->plugin_name . '-public-js' , 'emoji_reactions', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ));
+		wp_localize_script( $this->plugin_name . '-public-js' , 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ));
 
 	}
 
@@ -111,7 +111,7 @@ class Emoji_Reactions_Public {
 		$likes = $this->get_likes($ID, $type);
 
 		ob_start();
-		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reactions-public-display.php';
+		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reaction-public-display.php';
 		return ob_get_clean();
 	}
 
@@ -124,7 +124,7 @@ class Emoji_Reactions_Public {
  	 *
  	 * @return 	string 	echo status for the ajax call.
  	 */
-	public function emoji_reactions_ajax_save_action() {
+	public function emoji_reaction_ajax_save_action() {
 		$object_id = $_POST['object_id'];
 		$object_type = $_POST['object_type'];
 		$emoji = $_POST['emoji'];

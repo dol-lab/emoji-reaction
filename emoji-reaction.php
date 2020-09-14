@@ -8,20 +8,20 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              https://github.com/dol-lab/emoji-reactions
+ * @link              https://github.com/dol-lab/emoji-reaction
  * @since             0.0.1
- * @package           Emoji_Reactions
+ * @package           Emoji_Reaction
  *
  * @wordpress-plugin
- * Plugin Name:       Emoji Reactions
- * Plugin URI:        https://github.com/dol-lab/emoji-reactions
+ * Plugin Name:       Emoji Reaction
+ * Plugin URI:        https://github.com/dol-lab/emoji-reaction
  * Description:       Adds emoji reactions to posts & comments.
  * Version:           0.0.2
  * Author:            Digital Open Learning Lab
  * Author URI:        https://spaces.kisd.de
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       emoji-reactions
+ * Text Domain:       emoji-reaction
  * Domain Path:       /languages
  */
 
@@ -33,34 +33,34 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Currently plugin version.
  */
-define( 'EMOJI_REACTIONS_VERSION', '0.0.2' );
+define( 'EMOJI_REACTION_VERSION', '0.0.2' );
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-emoji-reactions-activator.php
+ * This action is documented in includes/class-emoji-reaction-activator.php
  */
-function activate_emoji_reactions() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reactions-activator.php';
-	Emoji_Reactions_Activator::activate();
+function activate_emoji_reaction() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reaction-activator.php';
+	Emoji_Reaction_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-emoji-reactions-deactivator.php
+ * This action is documented in includes/class-emoji-reaction-deactivator.php
  */
-function deactivate_emoji_reactions() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reactions-deactivator.php';
-	Emoji_Reactions_Deactivator::deactivate();
+function deactivate_emoji_reaction() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reaction-deactivator.php';
+	Emoji_Reaction_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_emoji_reactions' );
-register_deactivation_hook( __FILE__, 'deactivate_emoji_reactions' );
+register_activation_hook( __FILE__, 'activate_emoji_reaction' );
+register_deactivation_hook( __FILE__, 'deactivate_emoji_reaction' );
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reactions.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reaction.php';
 
 /**
  * Begins execution of the plugin.
@@ -71,10 +71,10 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reactions.php';
  *
  * @since    0.0.1
  */
-function run_emoji_reactions() {
+function run_emoji_reaction() {
 
-	$plugin = new Emoji_Reactions();
+	$plugin = new Emoji_Reaction();
 	$plugin->run();
 
 }
-run_emoji_reactions();
+run_emoji_reaction();

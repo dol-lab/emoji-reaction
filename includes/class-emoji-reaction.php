@@ -8,8 +8,8 @@
  *
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  */
 
 /**
@@ -22,11 +22,11 @@
  * version of the plugin.
  *
  * @since      0.0.1
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  * @author     Author name <Author mail>
  */
-class Emoji_Reactions {
+class Emoji_Reaction {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -34,7 +34,7 @@ class Emoji_Reactions {
 	 *
 	 * @since    0.0.1
 	 * @access   protected
-	 * @var      Emoji_Reactions_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Emoji_Reaction_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -66,12 +66,12 @@ class Emoji_Reactions {
 	 * @since    0.0.1
 	 */
 	public function __construct() {
-		if ( defined( 'EMOJI_REACTIONS_VERSION' ) ) {
-			$this->version = EMOJI_REACTIONS_VERSION;
+		if ( defined( 'EMOJI_REACTION_VERSION' ) ) {
+			$this->version = EMOJI_REACTION_VERSION;
 		} else {
 			$this->version = '0.0.1';
 		}
-		$this->plugin_name = 'emoji-reactions';
+		$this->plugin_name = 'emoji-reaction';
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -85,10 +85,10 @@ class Emoji_Reactions {
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - Emoji_Reactions_Loader. Orchestrates the hooks of the plugin.
-	 * - Emoji_Reactions_i18n. Defines internationalization functionality.
-	 * - Emoji_Reactions_Admin. Defines all hooks for the admin area.
-	 * - Emoji_Reactions_Public. Defines all hooks for the public side of the site.
+	 * - Emoji_Reaction_Loader. Orchestrates the hooks of the plugin.
+	 * - Emoji_Reaction_i18n. Defines internationalization functionality.
+	 * - Emoji_Reaction_Admin. Defines all hooks for the admin area.
+	 * - Emoji_Reaction_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -102,33 +102,33 @@ class Emoji_Reactions {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-emoji-reactions-loader.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-emoji-reaction-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-emoji-reactions-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-emoji-reaction-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-emoji-reactions-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-emoji-reaction-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-emoji-reactions-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-emoji-reaction-public.php';
 
-		$this->loader = new Emoji_Reactions_Loader();
+		$this->loader = new Emoji_Reaction_Loader();
 
 	}
 
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Emoji_Reactions_i18n class in order to set the domain and to register the hook
+	 * Uses the Emoji_Reaction_i18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    0.0.1
@@ -136,7 +136,7 @@ class Emoji_Reactions {
 	 */
 	private function set_locale() {
 
-		$plugin_i18n = new Emoji_Reactions_i18n();
+		$plugin_i18n = new Emoji_Reaction_i18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 
@@ -151,7 +151,7 @@ class Emoji_Reactions {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Emoji_Reactions_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_admin = new Emoji_Reaction_Admin( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -167,7 +167,7 @@ class Emoji_Reactions {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Emoji_Reactions_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_public = new Emoji_Reaction_Public( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -175,13 +175,13 @@ class Emoji_Reactions {
 		/**
 		 * Ajax actions
 		 */
-		$this->loader->add_action( 'wp_ajax_emoji_reactions_ajax_save_action', $plugin_public, 'emoji_reactions_ajax_save_action' );
+		$this->loader->add_action( 'wp_ajax_emoji_reaction_ajax_save_action', $plugin_public, 'emoji_reaction_ajax_save_action' );
 
 		/**
 		 * Custom actions/filters, which can be inserted into a theme
 		 * some infos on this: https://github.com/DevinVinson/WordPress-Plugin-Boilerplate/issues/218
 		 */
-		$this->loader->add_filter( 'emoji_reactions_buttons', $plugin_public, 'display_buttons' );
+		$this->loader->add_filter( 'emoji_reaction_buttons', $plugin_public, 'display_buttons' );
 
 	}
 
@@ -209,7 +209,7 @@ class Emoji_Reactions {
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     0.0.1
-	 * @return    Emoji_Reactions_Loader    Orchestrates the hooks of the plugin.
+	 * @return    Emoji_Reaction_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;

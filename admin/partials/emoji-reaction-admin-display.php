@@ -8,8 +8,8 @@
  * @link       Author uri
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/admin/partials
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/admin/partials
  */
 ?>
 

@@ -5,8 +5,8 @@
  *
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  */
 
 /**
@@ -15,10 +15,10 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      0.0.1
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/includes
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/includes
  */
-class Emoji_Reactions_Deactivator {
+class Emoji_Reaction_Deactivator {
 
 	/**
 	 * Short Description. (use period)

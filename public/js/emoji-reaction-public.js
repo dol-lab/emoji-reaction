@@ -3,9 +3,9 @@
 
 	$( window ).load(function() {
 
-		if($('.emoji-reactions-wrapper').length > 0) {
+		if($('.emoji-reaction-wrapper').length > 0) {
 
-			$(document).on('click', '.emoji-reactions-button', function(e) {
+			$(document).on('click', '.emoji-reaction-button', function(e) {
 				e.preventDefault();
 
 				console.log('like');
@@ -23,7 +23,7 @@
 				}
 
 				var data = {
-					action: 'emoji_reactions_ajax_save_action',
+					action: 'emoji_reaction_ajax_save_action',
 					object_id: object_id,
 					object_type: object_type,
 					emoji: emoji,
@@ -31,7 +31,7 @@
 				};
 
 				var save_action = $.ajax({
-					url: emoji_reactions.ajax_url,
+					url: emoji_reaction.ajax_url,
 					type: 'POST',
 					dataType: 'text',
 					data: data,
@@ -42,7 +42,7 @@
 					console.log(result);
 				});
 				save_action.fail(function( jqXHR, textStatus ) {
-					console.log( "emoji_reactions: Request failed: " + textStatus );
+					console.log( "emoji_reaction: Request failed: " + textStatus );
 				});
 			});
 

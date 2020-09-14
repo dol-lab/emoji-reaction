@@ -6,8 +6,8 @@
  * @link       Author uri
  * @since      0.0.1
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/admin
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/admin
  */
 
 /**
@@ -16,11 +16,11 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the admin-specific stylesheet and JavaScript.
  *
- * @package    Emoji_Reactions
- * @subpackage Emoji_Reactions/admin
+ * @package    Emoji_Reaction
+ * @subpackage Emoji_Reaction/admin
  * @author     Author name <Author mail>
  */
-class Emoji_Reactions_Admin {
+class Emoji_Reaction_Admin {
 
 	/**
 	 * The ID of this plugin.
@@ -65,15 +65,15 @@ class Emoji_Reactions_Admin {
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Emoji_Reactions_Loader as all of the hooks are defined
+		 * defined in Emoji_Reaction_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Emoji_Reactions_Loader will then create the relationship
+		 * The Emoji_Reaction_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reactions-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-admin.css', array(), $this->version, 'all' );
 
 	}
 
@@ -88,15 +88,15 @@ class Emoji_Reactions_Admin {
 		 * This function is provided for demonstration purposes only.
 		 *
 		 * An instance of this class should be passed to the run() function
-		 * defined in Emoji_Reactions_Loader as all of the hooks are defined
+		 * defined in Emoji_Reaction_Loader as all of the hooks are defined
 		 * in that particular class.
 		 *
-		 * The Emoji_Reactions_Loader will then create the relationship
+		 * The Emoji_Reaction_Loader will then create the relationship
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/emoji-reactions-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-admin.js', array( 'jquery' ), $this->version, false );
 
 	}
 
