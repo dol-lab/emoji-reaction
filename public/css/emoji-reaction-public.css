@@ -27,7 +27,12 @@
 
 .emoji-reaction-wrapper button.emoji-reaction-button:before {
     content: attr(data-emoji);
-    display: block;
+    display: inline-block;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Segoe UI Symbol", "Android Emoji", EmojiSymbols, "EmojiOne Mozilla" !important;
     font-size: 18px;
+}
+.emoji-reaction-wrapper button.emoji-reaction-button.show-count:after {
+    content: attr(data-count);
+    display: inline-block;
+    margin-left: 1em;
 }

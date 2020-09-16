@@ -106,6 +106,15 @@ class Emoji_Reaction_Public {
  	 * @return 	html 	HTML of emoji buttons.
  	 */
 	public function display_buttons($args) {
+		// list of emojis, todo: move to plugin options
+		$emojis = [
+			['👍', 'thumbs up'],
+			['❤️', 'heart'],
+			['🤔', 'thinking'],
+			['🧉', 'mate'],
+			['🦄', 'unicorn'],
+		];
+
 		$type = !empty($args['type']) ? $args['type'] : 'post';
 		$ID = !empty($args['ID']) ? $args['ID'] : get_the_ID();
 		$likes = $this->get_likes($ID, $type);
@@ -236,5 +245,22 @@ class Emoji_Reaction_Public {
 		}
 
 		return $update;
+	}
+
+	/**
+	 * Get number of likes of an emoji for a post / comment.
+	 *
+	 * @since 0.0.4
+	 *
+	 * @param 	int 		$object_id 		Post or comment id.
+	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
+	 * @param	string		$emoji			Emoji the user clicked on.
+	 * 
+	 * @return 	int 		Number of likes of an emoji.
+	 */
+	public function get_emoji_count($object_id, $object_type, $emoji) {
+		$likes = !empty($this->get_likes($object_id, $object_type)) ? $this->get_likes($object_id, $object_type) : [];
+
+		return sizeof($likes[$emoji]);
 	}
 }
