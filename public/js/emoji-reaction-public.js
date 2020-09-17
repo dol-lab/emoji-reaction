@@ -11,11 +11,11 @@
 				console.log('like');
 
 				var emoji_button = $(this);
-				var parent = emoji_button.parent();
+				var wrapper = emoji_button.parent().parent().parent();
 
-				var object_id = parent.data('object-id');
-				var object_type = parent.data('object-type');
-				var nonce = parent.data('nonce');
+				var object_id = wrapper.data('object-id');
+				var object_type = wrapper.data('object-type');
+				var nonce = wrapper.data('nonce');
 
 				var emoji = emoji_button.data('emoji');
 				var current_count = parseInt(emoji_button.attr('data-count'));
@@ -57,7 +57,13 @@
 				}
 
 				save_action.done(function(result) {
-					console.log(result.data.state);
+					console.log(result.data);
+
+					if (result.data.state == 'unliked') {
+						detach_user_name(emoji_button, result.data.user_id )
+					} else if (result.data.state == 'liked') {
+						append_user_name(emoji_button, result.data.user_id, result.data.user_name)
+					}
 				});
 
 				save_action.fail(function( jqXHR, textStatus, errorThrown ) {
@@ -78,11 +84,20 @@
 					}
 				});
 
-				
 			});
 
 		}
 
 	});
+
+	function append_user_name(element, user_id, user_name) {
+		var container = element.parent().find('.emoji-reaction-usernames');
+		container.append('<li data-user-id=' + user_id + '>' + user_name + '</li>');
+	}
+
+	function detach_user_name(element, user_id) {
+		var container = element.parent().find('.emoji-reaction-usernames');
+		container.find('[data-user-id=' + user_id + ']').detach();
+	}
 
 })( jQuery );

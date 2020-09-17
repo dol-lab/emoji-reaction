@@ -110,6 +110,7 @@ class Emoji_Reaction_Public {
 
 		$type = !empty($args['type']) ? $args['type'] : 'post';
 		$ID = !empty($args['ID']) ? $args['ID'] : get_the_ID();
+
 		$likes = $this->get_likes($ID, $type);
 
 		ob_start();
@@ -126,11 +127,6 @@ class Emoji_Reaction_Public {
  	 *
 	 * @return 	string 	echo status for the ajax call.
 	 * 
-	 * @todo
-	 * - return new count
-	 * - return new user list
-	 * - json?
-	 * 
  	 */
 	public function emoji_reaction_ajax_save_action() {
 		if ( ! wp_verify_nonce( $_POST['nonce'], '_emoji_reaction_action' ) ) {
@@ -145,10 +141,10 @@ class Emoji_Reaction_Public {
 
 		if ($_POST['unlike'] === 'true') {
 			$this->delete_like($object_id, $object_type, $emoji, $user_id);
-			wp_send_json_success(['state' => 'unliked']);
+			wp_send_json_success(['state' => 'unliked', 'user_id' => $user_id]);
 		} else {
 			$this->save_like($object_id, $object_type, $emoji, $user_id);
-			wp_send_json_success(['state' => 'liked']);
+			wp_send_json_success(['state' => 'liked', 'user_id' => $user_id, 'user_name' => $this->get_user_name($user_id)]);
 		}
 
 		
@@ -264,5 +260,21 @@ class Emoji_Reaction_Public {
 		$likes = !empty($this->get_likes($object_id, $object_type)) ? $this->get_likes($object_id, $object_type) : [];
 
 		return sizeof($likes[$emoji]);
+	}
+
+	/**
+	 * Get list of user names, who liked a post / comment.
+	 *
+	 * @since 0.0.6
+	 *
+	 * @param 	int 		$object_id 		Post or comment id.
+	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
+	 * 
+	 * @return 	array 		List of user names.
+	 */
+	public function get_user_name($user_id) {
+		$user_data = get_user_by('id', $user_id);
+
+		return $user_data->display_name;
 	}
 }
