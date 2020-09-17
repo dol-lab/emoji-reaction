@@ -225,4 +225,23 @@ class Emoji_Reaction {
 		return $this->version;
 	}
 
+	/**
+	 * Provide the list of emojis.
+	 *
+	 * @since     0.0.5
+	 * @return    array    Emojis used in the plugin.
+	 * 
+	 * @todo
+	 * - move to plugin options
+	 */
+	public function get_emojis() {
+		return [
+			['👍', 'thumbs up'],
+			['❤️', 'heart'],
+			['🤔', 'thinking'],
+			['🧉', 'mate'],
+			['🦄', 'unicorn'],
+		];
+	}
+
 }

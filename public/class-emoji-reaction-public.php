@@ -106,14 +106,7 @@ class Emoji_Reaction_Public {
  	 * @return 	html 	HTML of emoji buttons.
  	 */
 	public function display_buttons($args) {
-		// list of emojis, todo: move to plugin options
-		$emojis = [
-			['👍', 'thumbs up'],
-			['❤️', 'heart'],
-			['🤔', 'thinking'],
-			['🧉', 'mate'],
-			['🦄', 'unicorn'],
-		];
+		$emojis = Emoji_Reaction::get_emojis();
 
 		$type = !empty($args['type']) ? $args['type'] : 'post';
 		$ID = !empty($args['ID']) ? $args['ID'] : get_the_ID();
@@ -131,7 +124,13 @@ class Emoji_Reaction_Public {
  	 *
  	 * @since 0.0.1
  	 *
- 	 * @return 	string 	echo status for the ajax call.
+	 * @return 	string 	echo status for the ajax call.
+	 * 
+	 * @todo
+	 * - return new count
+	 * - return new user list
+	 * - json?
+	 * 
  	 */
 	public function emoji_reaction_ajax_save_action() {
 		$object_id = $_POST['object_id'];
