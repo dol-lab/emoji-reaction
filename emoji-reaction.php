@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       Emoji Reaction
  * Plugin URI:        https://github.com/dol-lab/emoji-reaction
- * Description:       Adds emoji reactions to posts & comments.
+ * Description:       Adds emoji reactions to posts and comments by logged in users.
  * Version:           0.0.5
  * Author:            Digital Open Learning Lab
  * Author URI:        https://spaces.kisd.de

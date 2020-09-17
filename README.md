@@ -2,7 +2,7 @@
 
 **Important:** This is work in progress. Check issues for todos.
 
-A Wordpress plugin which allows emoji reactions on posts and comments.
+A Wordpress plugin which allows emoji reactions on posts and comments by logged in users.
 
 ---
 
