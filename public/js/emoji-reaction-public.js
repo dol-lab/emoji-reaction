@@ -13,11 +13,13 @@
 				var emoji_button = $(this);
 				var parent = emoji_button.parent();
 
-				var object_id = parent.attr('data-object-id');
-				var object_type = parent.attr('data-object-type');
-				var emoji = emoji_button.attr('data-emoji');
-				var current_count = parseInt(emoji_button.attr('data-count'));
+				var object_id = parent.data('object-id');
+				var object_type = parent.data('object-type');
+				var nonce = parent.data('nonce');
 
+				var emoji = emoji_button.data('emoji');
+				var current_count = parseInt(emoji_button.attr('data-count'));
+				
 				var unlike = false;
 				if (emoji_button.hasClass('voted')) {
 					unlike = true;
@@ -29,12 +31,13 @@
 					object_type: object_type,
 					emoji: emoji,
 					unlike: unlike,
+					nonce: nonce,
 				};
 
 				var save_action = $.ajax({
 					url: emoji_reaction.ajax_url,
 					type: 'POST',
-					dataType: 'text',
+					dataType: 'json',
 					data: data,
 				});
 
@@ -54,11 +57,25 @@
 				}
 
 				save_action.done(function(result) {
-					console.log(result);
+					console.log(result.data.state);
 				});
-				save_action.fail(function( jqXHR, textStatus ) {
-					console.log( "emoji_reaction: Request failed: " + textStatus );
-					//if error: reverse emoji state change (see above)?
+
+				save_action.fail(function( jqXHR, textStatus, errorThrown ) {
+					console.log( "emoji_reaction: Request failed: " + errorThrown );
+					
+					// reverse emoji state change if ajax call failed
+					emoji_button.toggleClass('gray voted');
+					if (unlike) {
+						emoji_button.attr('data-count', current_count);
+						if (!emoji_button.hasClass('show-count')) {
+							emoji_button.addClass('show-count');
+						}
+					} else {
+						emoji_button.attr('data-count', current_count);
+						if (current_count == 0) {
+							emoji_button.removeClass('show-count');
+						}
+					}
 				});
 
 				

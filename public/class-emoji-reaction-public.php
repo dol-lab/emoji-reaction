@@ -133,22 +133,25 @@ class Emoji_Reaction_Public {
 	 * 
  	 */
 	public function emoji_reaction_ajax_save_action() {
+		if ( ! wp_verify_nonce( $_POST['nonce'], '_emoji_reaction_action' ) ) {
+			header('HTTP/1.1 500 Internal Server Error');
+        	die();
+		}
+
 		$object_id = $_POST['object_id'];
 		$object_type = $_POST['object_type'];
 		$emoji = $_POST['emoji'];
 		$user_id = get_current_user_id();
 
 		if ($_POST['unlike'] === 'true') {
-			
-			echo 'User ' . $user_id . ' unliked ' . $emoji;
 			$this->delete_like($object_id, $object_type, $emoji, $user_id);
-
+			wp_send_json_success(['state' => 'unliked']);
 		} else {
-
-			echo 'User ' . $user_id . ' voted ' . $emoji . ' for ' . $object_id . ' / ' . $object_type;
 			$this->save_like($object_id, $object_type, $emoji, $user_id);
+			wp_send_json_success(['state' => 'liked']);
 		}
 
+		
 		die();
 	}
 
