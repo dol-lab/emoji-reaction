@@ -263,14 +263,13 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
-	 * Get list of user names, who liked a post / comment.
+	 * Get user name by user id
 	 *
 	 * @since 0.0.6
 	 *
-	 * @param 	int 		$object_id 		Post or comment id.
-	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
+	 * @param 	int 		$user_id 		User id.
 	 * 
-	 * @return 	array 		List of user names.
+	 * @return 	string 		User display name.
 	 */
 	public function get_user_name($user_id) {
 		$user_data = get_user_by('id', $user_id);
