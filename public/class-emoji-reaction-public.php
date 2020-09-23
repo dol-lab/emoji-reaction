@@ -130,8 +130,7 @@ class Emoji_Reaction_Public {
  	 */
 	public function emoji_reaction_ajax_save_action() {
 		if ( ! wp_verify_nonce( $_POST['nonce'], '_emoji_reaction_action' ) ) {
-			header('HTTP/1.1 500 Internal Server Error');
-        	die();
+			wp_send_json_error(null, 401);
 		}
 
 		$object_id = $_POST['object_id'];
@@ -146,9 +145,6 @@ class Emoji_Reaction_Public {
 			$this->save_like($object_id, $object_type, $emoji, $user_id);
 			wp_send_json_success(['state' => 'liked', 'user_id' => $user_id, 'user_name' => $this->get_user_name($user_id)]);
 		}
-
-		
-		die();
 	}
 
 	/**

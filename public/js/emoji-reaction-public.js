@@ -67,7 +67,7 @@
 				});
 
 				save_action.fail(function( jqXHR, textStatus, errorThrown ) {
-					console.log( "emoji_reaction: Request failed: " + errorThrown );
+					console.log( "emoji_reaction request failed: " + errorThrown );
 					
 					// reverse emoji state change if ajax call failed
 					emoji_button.toggleClass('gray voted');
