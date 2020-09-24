@@ -1,0 +1,46 @@
+{
+  "_from": "semantic-ui-dropdown",
+  "_id": "semantic-ui-dropdown@2.4.1",
+  "_inBundle": false,
+  "_integrity": "sha512-TZio+bIeTLD7xXM9CGrDQj2GDJZp5DzedQvFazuh9LSiU2Y+YNT1ZP2LJJMvKtL8qlmrIQz3as2ibBCz5wii5A==",
+  "_location": "/semantic-ui-dropdown",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "semantic-ui-dropdown",
+    "name": "semantic-ui-dropdown",
+    "escapedName": "semantic-ui-dropdown",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/semantic-ui-dropdown/-/semantic-ui-dropdown-2.4.1.tgz",
+  "_shasum": "9ae311acd9b35674fb89bb8eb0f77e5b2fddc8ab",
+  "_spec": "semantic-ui-dropdown",
+  "_where": "/Users/Till/Daten/Office/01_web/dev_environment/spaces-server/spaces/web/app/plugins/emoji-reaction",
+  "author": {
+    "name": "Jack Lukic",
+    "email": "jack@semantic-ui.com"
+  },
+  "bugs": {
+    "url": "https://github.com/Semantic-Org/Semantic-UI/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "Single component release of dropdown",
+  "devDependencies": {},
+  "homepage": "http://www.semantic-ui.com",
+  "license": "MIT",
+  "name": "semantic-ui-dropdown",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Semantic-Org/UI-Dropdown.git"
+  },
+  "title": "Semantic UI - Dropdown",
+  "version": "2.4.1"
+}

@@ -72,6 +72,8 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_styles() {
 
+		wp_enqueue_style( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.css' );
+		wp_enqueue_style( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.css', $this->version );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 
 	}
@@ -83,7 +85,10 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.js', array( 'jquery' ), $this->version, false  );
+		wp_enqueue_script( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), $this->version, false  );
+
+		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'semantic-ui-transition', 'semantic-ui-dropdown' ), $this->version, false );
 
 		wp_localize_script( $this->plugin_name . '-public-js' , 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ));
 
