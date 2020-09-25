@@ -72,7 +72,7 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_styles() {
 
-		wp_enqueue_style( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.css' );
+		wp_enqueue_style( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.css', $this->version  );
 		wp_enqueue_style( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.css', $this->version );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 
@@ -105,8 +105,9 @@ class Emoji_Reaction_Public {
  	 *     Required. An array of elements, that identify the object to get liked or null.
  	 *
  	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
- 	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
-	  * }
+	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
+ 	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
+	 * }
 	  
  	 * @return 	html 	HTML of emoji buttons.
  	 */
@@ -115,6 +116,7 @@ class Emoji_Reaction_Public {
 
 		$type = !empty($args['type']) ? $args['type'] : 'post';
 		$ID = !empty($args['ID']) ? $args['ID'] : get_the_ID();
+		$align = !empty($args['align']) ? $args['align'] : 'left';
 
 		$likes = $this->get_likes($ID, $type);
 

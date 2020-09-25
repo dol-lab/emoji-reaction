@@ -3,36 +3,77 @@
  * included in this file.
  */
 
-.emoji-reaction-wrapper button.emoji-reaction-button {
-    background: #eee;
-    border: 1px solid #999;
+ .emoji-reaction-wrapper {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.emoji-reaction-wrapper.right {
+    flex-direction: row-reverse;
+}
+
+/** buttons */
+.emoji-reaction-wrapper button {
     cursor: pointer;
-    padding: 5px 10px 5px 10px;
+    background: transparent;
+}
+.emoji-reaction-wrapper button.emoji-reaction-button {
+    border: 1px solid #e6e6e6;
+    border-radius: .1875rem;
+    line-height: 1;
+    padding: 5px 6px 5px 9px;
     transition: 0.5s;
 }
 .emoji-reaction-wrapper button.emoji-reaction-button:hover {
-    background: #ccc;
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
+    background-color: #e6e6e6;
 }
 
-.emoji-reaction-wrapper button.emoji-reaction-button.gray {
+.emoji-reaction-wrapper button.emoji-reaction-button.not-voted {
     -webkit-filter: grayscale(100%);
     filter: grayscale(100%);
 }
-.emoji-reaction-wrapper button.emoji-reaction-button.gray:hover {
+.emoji-reaction-wrapper button.emoji-reaction-button.not-voted:hover {
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
 }
-
 .emoji-reaction-wrapper button.emoji-reaction-button:before {
     content: attr(data-emoji);
     display: inline-block;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Segoe UI Symbol", "Android Emoji", EmojiSymbols, "EmojiOne Mozilla" !important;
-    font-size: 18px;
+    font-size: 0.8125rem;
 }
 .emoji-reaction-wrapper button.emoji-reaction-button.show-count:after {
     content: attr(data-count);
     display: inline-block;
-    margin-left: 1em;
+    margin-left: 0.2rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/** buttons in emoji-reactions-container  */
+.emoji-reaction-wrapper .emoji-reactions-container button.emoji-reaction-button[data-count="0"] {
+    display: none;
+}
+
+/** buttons in emoji-reaction-button-addnew-container  */
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew {
+    padding: 6px 10px 6px 10px;
+}
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container {
+    display: flex;
+    padding: 5px;
+    flex-wrap: wrap;
+    max-width: 140px;
+}
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container button {
+    margin: 5px;
+}
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container button.not-voted {
+    border-color: transparent;
+    -webkit-filter: grayscale(0);
+    filter: grayscale(0);
 }

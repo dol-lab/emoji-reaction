@@ -17,4 +17,5 @@ apply_filters('emoji_reaction_buttons', array $args);
 
 - **'ID'** (int) The post or comment ID. Default is the value of 'get_the_ID' function.
 - **'type'** (string) The type of object. Accepts 'post' or 'comment'. Default 'post'.
+- **'align'** (string) Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
 

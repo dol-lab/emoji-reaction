@@ -5,19 +5,34 @@
 
 		if($('.emoji-reaction-wrapper').length > 0) {
 
+			$('.ui.dropdown').dropdown();
+
+			// prevent classes selected and active of semantic ui
+			$('.emoji-reaction-button').removeClass('selected active');
+
 			$(document).on('click', '.emoji-reaction-button', function(e) {
 				e.preventDefault();
+				// prevent classes selected and active of semantic ui
+				$('.emoji-reaction-button').removeClass('selected active');
 
 				console.log('like');
 
-				var emoji_button = $(this);
-				var wrapper = emoji_button.parent().parent().parent();
+				var wrapper = $(this).closest('.emoji-reaction-wrapper');
+				var emoji = $(this).data('emoji');
+				var emoji_button;
+
+				// if clicked button is shown as reaction, refer to itself
+				// otherwise try to find related button in emoji-reactions-container
+				if ($(this).parent().hasClass('emoji-reactions-container')) {
+					emoji_button = $(this);
+				} else {
+					emoji_button = wrapper.find('.emoji-reactions-container > .emoji-reaction-button[data-emoji="' + emoji + '"]');
+				}
 
 				var object_id = wrapper.data('object-id');
 				var object_type = wrapper.data('object-type');
 				var nonce = wrapper.data('nonce');
 
-				var emoji = emoji_button.data('emoji');
 				var current_count = parseInt(emoji_button.attr('data-count'));
 				
 				var unlike = false;
@@ -43,16 +58,16 @@
 
 				//pretend emoji state change in advance to avoid time offset
 				//maybe better: loading animation?
-				emoji_button.toggleClass('gray voted');
+				wrapper.find('.emoji-reaction-button[data-emoji="' + emoji + '"]').toggleClass('not-voted voted');
 				if (unlike) {
 					emoji_button.attr('data-count', current_count - 1);
 					if (current_count - 1 == 0) {
-						emoji_button.removeClass('show-count');
+						emoji_button.hide();
 					}
 				} else {
 					emoji_button.attr('data-count', current_count + 1);
-					if (!emoji_button.hasClass('show-count')) {
-						emoji_button.addClass('show-count');
+					if (current_count == 0) {
+						emoji_button.show();
 					}
 				}
 
@@ -70,16 +85,15 @@
 					console.log( "emoji_reaction request failed: " + errorThrown );
 					
 					// reverse emoji state change if ajax call failed
-					emoji_button.toggleClass('gray voted');
+					wrapper.find('.emoji-reaction-button[data-emoji="' + emoji + '"]').toggleClass('not-voted voted');
+					emoji_button.attr('data-count', current_count);
 					if (unlike) {
-						emoji_button.attr('data-count', current_count);
-						if (!emoji_button.hasClass('show-count')) {
-							emoji_button.addClass('show-count');
+						if (current_count - 1 == 0) {
+							emoji_button.show();
 						}
 					} else {
-						emoji_button.attr('data-count', current_count);
 						if (current_count == 0) {
-							emoji_button.removeClass('show-count');
+							emoji_button.hide();
 						}
 					}
 				});

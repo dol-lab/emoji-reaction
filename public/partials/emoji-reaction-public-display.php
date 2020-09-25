@@ -13,17 +13,24 @@
  */
 ?>
 
-<div class="emoji-reaction-wrapper" data-object-id='<?= $ID ?>' data-object-type='<?= $type ?>' data-nonce='<?= wp_create_nonce('_emoji_reaction_action') ?>'>
-    <ul>
-    <?php foreach($emojis as $emoji) : $count = $this->get_emoji_count($ID, $type, $emoji[0]); ?>
-        <li>    
-            <button class="emoji-reaction-button<?= in_array(get_current_user_id(), $likes[$emoji[0]]) ? ' voted' : ' gray' ?><?= $count > 0 ? ' show-count' : '' ?>" data-emoji="<?= $emoji[0] ?>" data-count="<?= $count ?>" name="<?= $emoji[1] ?>"></button>
-            <ul class="emoji-reaction-usernames">
-            <?php foreach($likes[$emoji[0]] as $user_id) : ?>
-                <li data-user-id=<?= $user_id ?>><?= $this->get_user_name($user_id); ?></li>
-            <?php endforeach; ?>
-            </ul>
-        </li>
-    <?php endforeach; ?>
-    </ul>
+<div class="emoji-reaction-wrapper <?= $align ?>" data-object-id='<?= $ID ?>' data-object-type='<?= $type ?>' data-nonce='<?= wp_create_nonce('_emoji_reaction_action') ?>'>
+
+    <div class="emoji-reactions-container">
+        <?php foreach($emojis as $emoji) : $count = $this->get_emoji_count($ID, $type, $emoji[0]); ?>
+            <button class="emoji-reaction-button<?= in_array(get_current_user_id(), $likes[$emoji[0]]) ? ' voted' : ' not-voted' ?> show-count" data-emoji="<?= $emoji[0] ?>" data-count="<?= $count ?>" name="<?= $emoji[1] ?>"></button>
+        <?php endforeach; ?>
+    </div>
+
+    <div class="emoji-reaction-button-addnew-container ui icon bottom pointing dropdown <?= $align ?>">
+        <button class="emoji-reaction-button-addnew">
+            <i class="far fa-thumbs-up"></i>
+        </button>
+        <div class="menu">
+            <div class="item-container">
+                <?php foreach($emojis as $emoji) : $count = $this->get_emoji_count($ID, $type, $emoji[0]);  ?>
+                    <button class="item emoji-reaction-button<?= in_array(get_current_user_id(), $likes[$emoji[0]]) ? ' voted' : ' not-voted' ?>" data-emoji="<?= $emoji[0] ?>" name="<?= $emoji[1] ?>"></button>
+                <?php  endforeach; ?>
+            </div>
+        </div>
+    </div>
 </div>
