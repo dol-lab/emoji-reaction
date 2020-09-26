@@ -34,6 +34,7 @@
 				var nonce = wrapper.data('nonce');
 
 				var current_count = parseInt(emoji_button.attr('data-count'));
+				var current_totalcount = parseInt(wrapper.attr('data-totalcount'));
 				
 				var unlike = false;
 				if (emoji_button.hasClass('voted')) {
@@ -61,11 +62,13 @@
 				wrapper.find('.emoji-reaction-button[data-emoji="' + emoji + '"]').toggleClass('not-voted voted');
 				if (unlike) {
 					emoji_button.attr('data-count', current_count - 1);
+					wrapper.attr('data-totalcount', current_totalcount - 1);
 					if (current_count - 1 == 0) {
 						emoji_button.hide();
 					}
 				} else {
 					emoji_button.attr('data-count', current_count + 1);
+					wrapper.attr('data-totalcount', current_totalcount + 1);
 					if (current_count == 0) {
 						emoji_button.show();
 					}
@@ -87,6 +90,7 @@
 					// reverse emoji state change if ajax call failed
 					wrapper.find('.emoji-reaction-button[data-emoji="' + emoji + '"]').toggleClass('not-voted voted');
 					emoji_button.attr('data-count', current_count);
+					wrapper.attr('data-totalcount', current_totalcount);
 					if (unlike) {
 						if (current_count - 1 == 0) {
 							emoji_button.show();

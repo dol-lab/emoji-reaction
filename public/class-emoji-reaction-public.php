@@ -119,6 +119,7 @@ class Emoji_Reaction_Public {
 		$align = !empty($args['align']) ? $args['align'] : 'left';
 
 		$likes = $this->get_likes($ID, $type);
+		$total_count = $this->get_likes_count($likes);
 
 		ob_start();
 		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reaction-public-display.php';
@@ -194,6 +195,9 @@ class Emoji_Reaction_Public {
 		if ( in_array($user_id, $likes[$emoji]) )
 			return false;
 
+		if ($emoji == '')
+			return false;
+
 		$likes[$emoji][] = $user_id;
 
 		if ($object_type == 'comment') {
@@ -249,20 +253,24 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
-	 * Get number of likes of an emoji for a post / comment.
+	 * Get total number of likes of a post / comment.
 	 *
-	 * @since 0.0.4
+	 * @since 0.1.1
 	 *
-	 * @param 	int 		$object_id 		Post or comment id.
-	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
-	 * @param	string		$emoji			Emoji the user clicked on.
+	 * @param 	array 		$likes		All likes of a post / comment.
 	 * 
-	 * @return 	int 		Number of likes of an emoji.
+	 * @return 	int 		Number of likes.
 	 */
-	public function get_emoji_count($object_id, $object_type, $emoji) {
-		$likes = !empty($this->get_likes($object_id, $object_type)) ? $this->get_likes($object_id, $object_type) : [];
+	public function get_likes_count($likes) {
+		$count = 0;
 
-		return sizeof($likes[$emoji]);
+		foreach ($likes as $emoji => $like) {
+			if ($emoji != '') {
+				$count += sizeof($like);
+			}
+		}
+
+		return $count;
 	}
 
 	/**

@@ -1,6 +1,8 @@
 /**
- * All of the CSS for your public-facing functionality should be
- * included in this file.
+ * CSS for public-facing functionality.
+ *
+ * Includes a modified icon (plus sign added) from fontawesome (https://fontawesome.com/icons/thumbs-up?style=regular) under the licence https://fontawesome.com/license.
+ *
  */
 
  .emoji-reaction-wrapper {
@@ -61,7 +63,10 @@
 
 /** buttons in emoji-reaction-button-addnew-container  */
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew {
-    padding: 6px 10px 6px 10px;
+    padding: 5px 10px 4px 10px;
+}
+.emoji-reaction-wrapper[data-totalcount="0"] .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew {
+    padding: 5px 0px 4px 10px;
 }
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container {
     display: flex;
@@ -76,4 +81,16 @@
     border-color: transparent;
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
+}
+
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew .icon-thumpup-plus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 688.57 512'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23999999;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3Eicon%3C/title%3E%3Cpath class='a' d='M718.67,183.53H650.5V115.37a12.08,12.08,0,0,0-12-12H614.38a12.08,12.08,0,0,0-12,12v68.16H534.18a12.07,12.07,0,0,0-12,12v24.08a12.07,12.07,0,0,0,12,12h68.16v68.16a12.08,12.08,0,0,0,12,12h24.08a12.08,12.08,0,0,0,12-12V231.7h68.17a12.08,12.08,0,0,0,12-12V195.57A12.08,12.08,0,0,0,718.67,183.53Z' transform='translate(-42.14 -103.33)'/%3E%3Cpath class='a' d='M508.41,390a94.56,94.56,0,0,0,13.73-49.84c0-44-37.22-85.58-85.82-85.58H399.84a127.68,127.68,0,0,0,8.85-46.54c0-72.8-37.69-104.73-95.27-104.73-61.61,0-58.1,94.93-71.76,108.6-22.75,22.75-49.62,66.45-68.76,83.4H74.14a32,32,0,0,0-32,32v240a32,32,0,0,0,32,32h64a32,32,0,0,0,31-24c44.51,1,75.06,39.94,177.81,39.94h22.22c77.11,0,112-39.42,112.94-95.33a96.41,96.41,0,0,0,17.34-67A92.92,92.92,0,0,0,508.41,390Zm-61.75,53.83c12.56,21.13,1.26,49.41-13.94,57.57,7.7,48.78-17.61,65.9-53.12,65.9H341.78c-71.64,0-118-37.82-171.64-37.82V343.33h10.92c28.36,0,68-70.89,94.54-97.46,28.36-28.36,18.91-75.63,37.82-94.54,47.27,0,47.27,33,47.27,56.73,0,39.17-28.36,56.72-28.36,94.54h104c21.11,0,37.73,18.91,37.82,37.82s-12.82,37.81-22.27,37.81c13.49,14.55,16.37,45.23-5.21,65.62ZM130.14,535.33a24,24,0,1,1-24-24A24,24,0,0,1,130.14,535.33Z' transform='translate(-42.14 -103.33)'/%3E%3C/svg%3E");
+    width: 20px;
+    height: 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    display: inline-block;
+}
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew:hover .icon-thumpup-plus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 688.57 512'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23010101;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3Eicon%3C/title%3E%3Cpath class='a' d='M718.67,183.53H650.5V115.37a12.08,12.08,0,0,0-12-12H614.38a12.08,12.08,0,0,0-12,12v68.16H534.18a12.07,12.07,0,0,0-12,12v24.08a12.07,12.07,0,0,0,12,12h68.16v68.16a12.08,12.08,0,0,0,12,12h24.08a12.08,12.08,0,0,0,12-12V231.7h68.17a12.08,12.08,0,0,0,12-12V195.57A12.08,12.08,0,0,0,718.67,183.53Z' transform='translate(-42.14 -103.33)'/%3E%3Cpath class='a' d='M508.41,390a94.56,94.56,0,0,0,13.73-49.84c0-44-37.22-85.58-85.82-85.58H399.84a127.68,127.68,0,0,0,8.85-46.54c0-72.8-37.69-104.73-95.27-104.73-61.61,0-58.1,94.93-71.76,108.6-22.75,22.75-49.62,66.45-68.76,83.4H74.14a32,32,0,0,0-32,32v240a32,32,0,0,0,32,32h64a32,32,0,0,0,31-24c44.51,1,75.06,39.94,177.81,39.94h22.22c77.11,0,112-39.42,112.94-95.33a96.41,96.41,0,0,0,17.34-67A92.92,92.92,0,0,0,508.41,390Zm-61.75,53.83c12.56,21.13,1.26,49.41-13.94,57.57,7.7,48.78-17.61,65.9-53.12,65.9H341.78c-71.64,0-118-37.82-171.64-37.82V343.33h10.92c28.36,0,68-70.89,94.54-97.46,28.36-28.36,18.91-75.63,37.82-94.54,47.27,0,47.27,33,47.27,56.73,0,39.17-28.36,56.72-28.36,94.54h104c21.11,0,37.73,18.91,37.82,37.82s-12.82,37.81-22.27,37.81c13.49,14.55,16.37,45.23-5.21,65.62ZM130.14,535.33a24,24,0,1,1-24-24A24,24,0,0,1,130.14,535.33Z' transform='translate(-42.14 -103.33)'/%3E%3C/svg%3E");
 }
