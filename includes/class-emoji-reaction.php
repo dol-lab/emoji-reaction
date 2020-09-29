@@ -238,9 +238,6 @@ class Emoji_Reaction {
 		return [
 			['👍', 'thumbs up'],
 			['❤️', 'heart'],
-			['🤔', 'thinking'],
-			['🧉', 'mate'],
-			['🦄', 'unicorn'],
 		];
 	}
 
