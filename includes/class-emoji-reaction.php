@@ -234,7 +234,7 @@ class Emoji_Reaction {
 	 * @todo
 	 * - move to plugin options
 	 */
-	public function get_emojis() {
+	public static function get_emojis() {
 		return [
 			['👍', 'thumbs up'],
 			['❤️', 'heart'],

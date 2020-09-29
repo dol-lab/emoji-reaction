@@ -166,7 +166,7 @@ class Emoji_Reaction_Public {
 	 * @return 	array|bool 	Array of user IDs associated to emojis.
 	 */
 	private function get_likes($object_id, $object_type) {
-		$likes = false;
+		$likes = [];
 
 		if ($object_type == 'comment') {
 			$likes = get_comment_meta( $object_id, $this->meta_key, true );
@@ -190,15 +190,21 @@ class Emoji_Reaction_Public {
 	 * @return 	int|bool 	Meta ID if the key didn't exist, true on successful update, false on failure or if user ID already existed.
 	 */
 	private function save_like($object_id, $object_type, $emoji, $user_id) {
-		$likes = !empty($this->get_likes($object_id, $object_type)) ? $this->get_likes($object_id, $object_type) : [];
-
-		if ( in_array($user_id, $likes[$emoji]) )
-			return false;
+		$likes = $this->get_likes($object_id, $object_type);
 
 		if ($emoji == '')
 			return false;
 
-		$likes[$emoji][] = $user_id;
+		if (!empty($likes)) { 
+			if (array_key_exists($emoji, $likes)) {
+				if ( in_array($user_id, $likes[$emoji]) )
+					return false;
+			}
+
+			$likes[$emoji][] = $user_id;
+		} else {
+			$likes = [ $emoji => [ $user_id ] ];
+		}
 
 		if ($object_type == 'comment') {
 			$update = update_comment_meta( $object_id, $this->meta_key, $likes );
@@ -222,7 +228,7 @@ class Emoji_Reaction_Public {
 	 * @return 	bool 		True on success, false on failure.
 	 */
 	private function delete_like($object_id, $object_type, $emoji, $user_id) {
-		$likes = !empty($this->get_likes($object_id, $object_type)) ? $this->get_likes($object_id, $object_type) : [];
+		$likes = $this->get_likes($object_id, $object_type);
 
 		if (($key = array_search($user_id, $likes[$emoji])) !== false) {
 			unset($likes[$emoji][$key]);
@@ -264,9 +270,11 @@ class Emoji_Reaction_Public {
 	public function get_likes_count($likes) {
 		$count = 0;
 
-		foreach ($likes as $emoji => $like) {
-			if ($emoji != '') {
-				$count += sizeof($like);
+		if (!empty($likes)) {
+			foreach ($likes as $emoji => $like) {
+				if ($emoji != '') {
+					$count += sizeof($like);
+				}
 			}
 		}
 
