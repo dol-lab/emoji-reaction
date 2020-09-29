@@ -25,7 +25,7 @@
     border: 1px solid #e6e6e6;
     border-radius: .1875rem;
     line-height: 1;
-    padding: 5px 6px 5px 9px;
+    padding: 5px 8px 5px 9px;
     transition: 0.5s;
 }
 .emoji-reaction-wrapper button.emoji-reaction-button:hover {
@@ -68,10 +68,12 @@
 .emoji-reaction-wrapper[data-totalcount="0"] .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew {
     padding: 5px 0px 4px 10px;
 }
+.emoji-reaction-wrapper .emoji-reaction-button-addnew-container.ui.dropdown > .menu {
+    z-index: 9999 !important;
+}
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container {
     display: flex;
-    padding: 5px;
-    flex-wrap: wrap;
+    /*flex-wrap: wrap; */ /** problems in safari, needs another solution if more than 3 emojis */
     max-width: 140px;
 }
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container button {
