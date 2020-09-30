@@ -230,15 +230,15 @@ class Emoji_Reaction {
 	 *
 	 * @since     0.0.5
 	 * @return    array    Emojis used in the plugin.
-	 * 
+	 *
 	 * @todo
 	 * - move to plugin options
 	 */
 	public static function get_emojis() {
-		return [
-			['👍', 'thumbs up'],
-			['❤️', 'heart'],
-		];
+		return array(
+			array( '👍', 'thumbs up' ),
+			array( '❤️', 'heart' ),
+		);
 	}
 
 }

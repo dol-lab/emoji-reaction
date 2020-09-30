@@ -53,8 +53,8 @@ class Emoji_Reaction_Public {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    0.0.1
-	 * @param      string    $plugin_name       The name of the plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $plugin_name       The name of the plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
@@ -72,7 +72,7 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_styles() {
 
-		wp_enqueue_style( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.css', $this->version  );
+		wp_enqueue_style( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.css', $this->version );
 		wp_enqueue_style( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.css', $this->version );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 
@@ -85,41 +85,41 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.js', array( 'jquery' ), $this->version, false  );
-		wp_enqueue_script( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), $this->version, false  );
+		wp_enqueue_script( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), $this->version, false );
 
 		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'semantic-ui-transition', 'semantic-ui-dropdown' ), $this->version, false );
 
-		wp_localize_script( $this->plugin_name . '-public-js' , 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ));
+		wp_localize_script( $this->plugin_name . '-public-js', 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 
 	}
 
 	/**
- 	 * Displays emoji buttons.
- 	 *
- 	 * The callback function added as a filter, which can be applied in the theme to display the emoji buttons.
- 	 *
- 	 * @since 0.0.1
- 	 *
- 	 * @param 	array 	$args {
- 	 *     Required. An array of elements, that identify the object to get liked or null.
- 	 *
- 	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
+	 * Displays emoji buttons.
+	 *
+	 * The callback function added as a filter, which can be applied in the theme to display the emoji buttons.
+	 *
+	 * @since 0.0.1
+	 *
+	 * @param   array $args {
+	 *   Required. An array of elements, that identify the object to get liked or null.
+	 *
+	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
 	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
- 	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
+	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
 	 * }
-	  
- 	 * @return 	html 	HTML of emoji buttons.
- 	 */
-	public function display_buttons($args) {
+
+	 * @return  html    HTML of emoji buttons.
+	 */
+	public function display_buttons( $args ) {
 		$emojis = Emoji_Reaction::get_emojis();
 
-		$type = !empty($args['type']) ? $args['type'] : 'post';
-		$ID = !empty($args['ID']) ? $args['ID'] : get_the_ID();
-		$align = !empty($args['align']) ? $args['align'] : 'left';
+		$type = ! empty( $args['type'] ) ? $args['type'] : 'post';
+		$ID = ! empty( $args['ID'] ) ? $args['ID'] : get_the_ID();
+		$align = ! empty( $args['align'] ) ? $args['align'] : 'left';
 
-		$likes = $this->get_likes($ID, $type);
-		$total_count = $this->get_likes_count($likes);
+		$likes = $this->get_likes( $ID, $type );
+		$total_count = $this->get_likes_count( $likes );
 
 		ob_start();
 		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reaction-public-display.php';
@@ -127,18 +127,17 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
- 	 * Handles data send via ajax.
- 	 *
- 	 * It updates, save or delete user IDs in the post or comment meta.
- 	 *
- 	 * @since 0.0.1
- 	 *
-	 * @return 	string 	echo status for the ajax call.
-	 * 
- 	 */
+	 * Handles data send via ajax.
+	 *
+	 * It updates, save or delete user IDs in the post or comment meta.
+	 *
+	 * @since 0.0.1
+	 *
+	 * @return  string  echo status for the ajax call.
+	 */
 	public function emoji_reaction_ajax_save_action() {
 		if ( ! wp_verify_nonce( $_POST['nonce'], '_emoji_reaction_action' ) ) {
-			wp_send_json_error(null, 401);
+			wp_send_json_error( null, 401 );
 		}
 
 		$object_id = $_POST['object_id'];
@@ -146,12 +145,23 @@ class Emoji_Reaction_Public {
 		$emoji = $_POST['emoji'];
 		$user_id = get_current_user_id();
 
-		if ($_POST['unlike'] === 'true') {
-			$this->delete_like($object_id, $object_type, $emoji, $user_id);
-			wp_send_json_success(['state' => 'unliked', 'user_id' => $user_id]);
+		if ( $_POST['unlike'] === 'true' ) {
+			$this->delete_like( $object_id, $object_type, $emoji, $user_id );
+			wp_send_json_success(
+				array(
+					'state' => 'unliked',
+					'user_id' => $user_id,
+				)
+			);
 		} else {
-			$this->save_like($object_id, $object_type, $emoji, $user_id);
-			wp_send_json_success(['state' => 'liked', 'user_id' => $user_id, 'user_name' => $this->get_user_name($user_id)]);
+			$this->save_like( $object_id, $object_type, $emoji, $user_id );
+			wp_send_json_success(
+				array(
+					'state' => 'liked',
+					'user_id' => $user_id,
+					'user_name' => $this->get_user_name( $user_id ),
+				)
+			);
 		}
 	}
 
@@ -160,15 +170,15 @@ class Emoji_Reaction_Public {
 	 *
 	 * @since 0.0.2
 	 *
-	 * @param 	int 		$object_id 		Post or comment id.
-	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
-	 * 
-	 * @return 	array|bool 	Array of user IDs associated to emojis.
+	 * @param   int    $object_id      Post or comment id.
+	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
+	 *
+	 * @return  array|bool  Array of user IDs associated to emojis.
 	 */
-	private function get_likes($object_id, $object_type) {
-		$likes = [];
+	private function get_likes( $object_id, $object_type ) {
+		$likes = array();
 
-		if ($object_type == 'comment') {
+		if ( $object_type == 'comment' ) {
 			$likes = get_comment_meta( $object_id, $this->meta_key, true );
 		} else {
 			$likes = get_post_meta( $object_id, $this->meta_key, true );
@@ -182,31 +192,33 @@ class Emoji_Reaction_Public {
 	 *
 	 * @since 0.0.2
 	 *
-	 * @param 	int 		$object_id 		Post or comment id.
-	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
-	 * @param	string		$emoji			Emoji the user clicked on.
-	 * @param	int			$user_id		User ID to save.
-	 * 
-	 * @return 	int|bool 	Meta ID if the key didn't exist, true on successful update, false on failure or if user ID already existed.
+	 * @param   int    $object_id      Post or comment id.
+	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
+	 * @param   string $emoji          Emoji the user clicked on.
+	 * @param   int    $user_id        User ID to save.
+	 *
+	 * @return  int|bool    Meta ID if the key didn't exist, true on successful update, false on failure or if user ID already existed.
 	 */
-	private function save_like($object_id, $object_type, $emoji, $user_id) {
-		$likes = $this->get_likes($object_id, $object_type);
+	private function save_like( $object_id, $object_type, $emoji, $user_id ) {
+		$likes = $this->get_likes( $object_id, $object_type );
 
-		if ($emoji == '')
+		if ( $emoji == '' ) {
 			return false;
-
-		if (!empty($likes)) { 
-			if (array_key_exists($emoji, $likes)) {
-				if ( in_array($user_id, $likes[$emoji]) )
-					return false;
-			}
-
-			$likes[$emoji][] = $user_id;
-		} else {
-			$likes = [ $emoji => [ $user_id ] ];
 		}
 
-		if ($object_type == 'comment') {
+		if ( ! empty( $likes ) ) {
+			if ( array_key_exists( $emoji, $likes ) ) {
+				if ( in_array( $user_id, $likes[ $emoji ] ) ) {
+					return false;
+				}
+			}
+
+			$likes[ $emoji ][] = $user_id;
+		} else {
+			$likes = array( $emoji => array( $user_id ) );
+		}
+
+		if ( $object_type == 'comment' ) {
 			$update = update_comment_meta( $object_id, $this->meta_key, $likes );
 		} else {
 			$update = update_post_meta( $object_id, $this->meta_key, $likes );
@@ -220,35 +232,35 @@ class Emoji_Reaction_Public {
 	 *
 	 * @since 0.0.3
 	 *
-	 * @param 	int 		$object_id 		Post or comment id.
-	 * @param 	string 		$object_type 	Type of object. Accepts 'post' or 'comment'.
-	 * @param	string		$emoji			Emoji the user clicked on.
-	 * @param	int			$user_id		User ID to delete.
-	 * 
-	 * @return 	bool 		True on success, false on failure.
+	 * @param   int    $object_id      Post or comment id.
+	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
+	 * @param   string $emoji          Emoji the user clicked on.
+	 * @param   int    $user_id        User ID to delete.
+	 *
+	 * @return  bool        True on success, false on failure.
 	 */
-	private function delete_like($object_id, $object_type, $emoji, $user_id) {
-		$likes = $this->get_likes($object_id, $object_type);
+	private function delete_like( $object_id, $object_type, $emoji, $user_id ) {
+		$likes = $this->get_likes( $object_id, $object_type );
 
-		if (($key = array_search($user_id, $likes[$emoji])) !== false) {
-			unset($likes[$emoji][$key]);
+		if ( ( $key = array_search( $user_id, $likes[ $emoji ] ) ) !== false ) {
+			unset( $likes[ $emoji ][ $key ] );
 		} else {
 			return false;
 		}
 
 		// clean up empty arrays
-		if (empty($likes[$emoji])) {
-			unset($likes[$emoji]);
+		if ( empty( $likes[ $emoji ] ) ) {
+			unset( $likes[ $emoji ] );
 		}
 
-		if (empty($likes)) {
-			if ($object_type == 'comment') {
+		if ( empty( $likes ) ) {
+			if ( $object_type == 'comment' ) {
 				$update = delete_comment_meta( $object_id, $this->meta_key );
 			} else {
 				$update = delete_post_meta( $object_id, $this->meta_key );
 			}
 		} else {
-			if ($object_type == 'comment') {
+			if ( $object_type == 'comment' ) {
 				$update = update_comment_meta( $object_id, $this->meta_key, $likes );
 			} else {
 				$update = update_post_meta( $object_id, $this->meta_key, $likes );
@@ -263,17 +275,17 @@ class Emoji_Reaction_Public {
 	 *
 	 * @since 0.1.1
 	 *
-	 * @param 	array 		$likes		All likes of a post / comment.
-	 * 
-	 * @return 	int 		Number of likes.
+	 * @param   array $likes      All likes of a post / comment.
+	 *
+	 * @return  int         Number of likes.
 	 */
-	public function get_likes_count($likes) {
+	public function get_likes_count( $likes ) {
 		$count = 0;
 
-		if (!empty($likes)) {
-			foreach ($likes as $emoji => $like) {
-				if ($emoji != '') {
-					$count += sizeof($like);
+		if ( ! empty( $likes ) ) {
+			foreach ( $likes as $emoji => $like ) {
+				if ( $emoji != '' ) {
+					$count += sizeof( $like );
 				}
 			}
 		}
@@ -286,12 +298,12 @@ class Emoji_Reaction_Public {
 	 *
 	 * @since 0.0.6
 	 *
-	 * @param 	int 		$user_id 		User id.
-	 * 
-	 * @return 	string 		User display name.
+	 * @param   int $user_id        User id.
+	 *
+	 * @return  string      User display name.
 	 */
-	public function get_user_name($user_id) {
-		$user_data = get_user_by('id', $user_id);
+	public function get_user_name( $user_id ) {
+		$user_data = get_user_by( 'id', $user_id );
 
 		return $user_data->display_name;
 	}
