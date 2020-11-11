@@ -64,7 +64,7 @@
 /** buttons in emoji-reaction-button-addnew-container  */
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew {
     padding: 0 10px 0 10px;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 .emoji-reaction-wrapper[data-totalcount="0"] .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew {
     padding: 5px 0px 4px 10px;
@@ -84,6 +84,13 @@
     border-color: transparent;
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
+}
+
+/** username list in popup */
+.emoji-reaction-usernames {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .emoji-reaction-button-addnew .icon-thumpup-plus {
