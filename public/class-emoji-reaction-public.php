@@ -112,11 +112,18 @@ class Emoji_Reaction_Public {
 	 * @return  html    HTML of emoji buttons.
 	 */
 	public function get_buttons( $args ) {
-		$emojis = Emoji_Reaction::get_emojis();
+		$defaults = array(
+			'type' 	=> 'post',
+			'ID' 	=> get_the_ID(),
+			'align' => 'left',
+		);
+		$args = wp_parse_args( $args, $defaults );
 
-		$type = ! empty( $args['type'] ) ? $args['type'] : 'post';
-		$ID = ! empty( $args['ID'] ) ? $args['ID'] : get_the_ID();
-		$align = ! empty( $args['align'] ) ? $args['align'] : 'left';
+		$emojis = Emoji_Reaction::get_emojis();
+		
+		$type = $args['type'];
+		$ID = $args['ID'];
+		$align = $args['align'];
 
 		$likes = $this->get_likes( $ID, $type );
 		$total_count = $this->get_likes_count( $likes );
