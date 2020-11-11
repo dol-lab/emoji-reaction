@@ -181,7 +181,7 @@ class Emoji_Reaction {
 		 * Custom actions/filters, which can be inserted into a theme
 		 * some infos on this: https://github.com/DevinVinson/WordPress-Plugin-Boilerplate/issues/218
 		 */
-		$this->loader->add_filter( 'emoji_reaction_buttons', $plugin_public, 'display_buttons' );
+		$this->loader->add_filter( 'emoji_reaction_buttons', $plugin_public, 'get_buttons' );
 
 	}
 

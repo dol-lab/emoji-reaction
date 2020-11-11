@@ -111,7 +111,7 @@ class Emoji_Reaction_Public {
 
 	 * @return  html    HTML of emoji buttons.
 	 */
-	public function display_buttons( $args ) {
+	public function get_buttons( $args ) {
 		$emojis = Emoji_Reaction::get_emojis();
 
 		$type = ! empty( $args['type'] ) ? $args['type'] : 'post';
