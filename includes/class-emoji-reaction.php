@@ -229,10 +229,10 @@ class Emoji_Reaction {
 	 * Provide the list of emojis.
 	 *
 	 * @since     0.0.5
-	 * @return    array    Emojis used in the plugin.
+	 * @return    array    Default emojis used in the plugin.
 	 *
 	 * @todo
-	 * - move to plugin options
+	 * - admin page, so this function has to be moved to a default settings function
 	 */
 	public static function get_emojis() {
 		return array(
