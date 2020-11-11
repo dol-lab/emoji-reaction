@@ -13,9 +13,18 @@ apply_filters('emoji_reaction_buttons', array $args);
 ```
 
 **$args**
-(array) (Required) An array of elements, that identify the object to get liked or null.
+(array) (Required) An array of settings.
 
 - **'ID'** (int) The post or comment ID. Default is the value of 'get_the_ID' function.
 - **'type'** (string) The type of object. Accepts 'post' or 'comment'. Default 'post'.
 - **'align'** (string) Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
+- **'emojis'** (array) List of emojis. Default:
+
+```
+$args['emojis'] => array(
+	array( '👍', 'thumbs up' ),
+	array( '❤️', 'heart' ),
+);
+```
+
 

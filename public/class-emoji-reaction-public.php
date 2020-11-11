@@ -113,13 +113,14 @@ class Emoji_Reaction_Public {
 	 */
 	public function get_buttons( $args ) {
 		$defaults = array(
-			'type' 	=> 'post',
-			'ID' 	=> get_the_ID(),
-			'align' => 'left',
+			'type' 		=> 'post',
+			'ID' 		=> get_the_ID(),
+			'align' 	=> 'left',
+			'emojis'	=> Emoji_Reaction::get_emojis(),
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		$emojis = Emoji_Reaction::get_emojis();
+		$emojis = $args['emojis'];
 		
 		$type = $args['type'];
 		$ID = $args['ID'];
