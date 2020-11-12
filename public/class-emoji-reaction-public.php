@@ -72,8 +72,9 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_styles() {
 
-		wp_enqueue_style( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.css', $this->version );
-		wp_enqueue_style( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.css', $this->version );
+		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', $this->version );
+		wp_enqueue_style( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.css', $this->version );
+		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', $this->version );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 
 	}
@@ -85,10 +86,11 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( 'semantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-transition/transition.min.js', array( 'jquery' ), $this->version, false );
-		wp_enqueue_script( 'semantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/semantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.js', array( 'jquery' ), $this->version, false );
 
-		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'semantic-ui-transition', 'semantic-ui-dropdown' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-dropdown' ), $this->version, false );
 
 		wp_localize_script( $this->plugin_name . '-public-js', 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 
@@ -117,9 +119,12 @@ class Emoji_Reaction_Public {
 			'type' 		=> 'post',
 			'ID' 		=> get_the_ID(),
 			'align' 	=> 'left',
+			'usernames'	=> 5,
 			'emojis'	=> Emoji_Reaction::get_emojis(),
 		);
 		$args = wp_parse_args( $args, $defaults );
+
+		$max_usernames = $args['usernames'];
 
 		$emojis = $args['emojis'];
 		
@@ -315,5 +320,22 @@ class Emoji_Reaction_Public {
 		$user_data = get_user_by( 'id', $user_id );
 
 		return $user_data->display_name;
+	}
+
+	/**
+	 * Move an user id to first position of array.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @param   int $user_id        User id.
+	 *
+	 * @return  array      User ids.
+	 */
+	public function userid_to_first_position( $user_ids, $user_id ) {
+		if ( in_array( $user_id, $user_ids ) ) {
+			array_unshift( $user_ids, $user_id );
+			$user_ids = array_unique( $user_ids );
+		}
+		return $user_ids;
 	}
 }

@@ -18,16 +18,31 @@
 	<div class="emoji-reactions-container">
 		<?php
 		foreach ( $emojis as $emoji ) :
+			$user_ids = array();
+			$user_ids_max = array();
 			$count = 0;
 			$classname_voted = 'not-voted';
 			if ( ! empty( $likes ) ) {
 				if ( array_key_exists( $emoji[0], $likes ) ) {
-					$count = sizeof( $likes[ $emoji[0] ] );
-					$classname_voted = in_array( get_current_user_id(), $likes[ $emoji[0] ] ) ? ' voted' : ' not-voted';
+					$user_ids = $this->userid_to_first_position($likes[$emoji[0]], get_current_user_id());
+					$count = sizeof( $user_ids );
+					$classname_voted = in_array( get_current_user_id(), $user_ids ) ? ' voted' : ' not-voted';
+					$user_ids_max = array_slice($user_ids, 0, $max_usernames);
 				}
 			}
+			
 			?>
-			<button class="emoji-reaction-button show-count <?php echo $classname_voted; ?>" data-emoji="<?php echo $emoji[0]; ?>" data-count="<?php echo $count; ?>" name="<?php echo $emoji[1]; ?>"></button>
+			<button class="emoji-reaction-button emoji-reaction-button-popup show-count <?php echo $classname_voted; ?>" data-emoji="<?php echo $emoji[0]; ?>" data-count="<?php echo $count; ?>" name="<?php echo $emoji[1]; ?>"></button>
+			<div class="ui popup emoji-reaction-popup-container">
+				<ul class="emoji-reaction-usernames">
+				<?php foreach ( $user_ids_max as $user_id) : ?>
+					<li data-user-id=<?= $user_id ?>><?= $this->get_user_name( $user_id ); ?></li>
+				<?php endforeach; ?>
+				</ul>
+				<?php if ( $count > $max_usernames ) : ?>
+					<p><?= sprintf(__("And %s more ...", 'emoji-reaction'), ($count - $max_usernames)); ?></p>
+				<?php endif; ?>
+			</div>
 		<?php endforeach; ?>
 	</div>
 

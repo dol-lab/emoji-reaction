@@ -87,7 +87,15 @@
 }
 
 /** username list in popup */
-.emoji-reaction-usernames {
+.ui.popup.emoji-reaction-popup-container {
+    padding: 0.3em 0.6em;
+    white-space: nowrap;
+}
+.ui.popup.emoji-reaction-popup-container ul.emoji-reaction-usernames,
+.ui.popup.emoji-reaction-popup-container p {
+    font-size: 12px;
+}
+.ui.popup.emoji-reaction-popup-container ul.emoji-reaction-usernames {
     margin: 0;
     padding: 0;
     list-style: none;

@@ -6,6 +6,16 @@
 		if($('.emoji-reaction-wrapper').length > 0) {
 
 			$('.ui.dropdown').dropdown();
+			$('.emoji-reaction-button-popup').popup({
+				inline: true,
+				addTouchEvents: false,
+				variation: 'inverted',
+			});
+
+			// todo:
+			/*$('.emoji-reaction-button-popup').on('taphold', function() {
+				$(this).popup('toggle');
+			});*/
 
 			// prevent classes selected and active of semantic ui
 			$('.emoji-reaction-button').removeClass('selected active');
@@ -109,12 +119,12 @@
 	});
 
 	function append_user_name(element, user_id, user_name) {
-		var container = element.parent().find('.emoji-reaction-usernames');
+		var container = element.next('.emoji-reaction-popup-container').find('.emoji-reaction-usernames');
 		container.append('<li data-user-id=' + user_id + '>' + user_name + '</li>');
 	}
 
 	function detach_user_name(element, user_id) {
-		var container = element.parent().find('.emoji-reaction-usernames');
+		var container = element.next('.emoji-reaction-popup-container').find('.emoji-reaction-usernames');
 		container.find('[data-user-id=' + user_id + ']').detach();
 	}
 
