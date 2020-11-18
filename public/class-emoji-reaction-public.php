@@ -119,7 +119,7 @@ class Emoji_Reaction_Public {
 			'type' 		=> 'post',
 			'ID' 		=> get_the_ID(),
 			'align' 	=> 'left',
-			'usernames'	=> 5,
+			'usernames'	=> 10,
 			'emojis'	=> Emoji_Reaction::get_emojis(),
 		);
 		$args = wp_parse_args( $args, $defaults );
