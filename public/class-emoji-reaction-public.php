@@ -111,22 +111,19 @@ class Emoji_Reaction_Public {
 	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
 	 *	   @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
 	 * }
-
-	 * @return  html    HTML of emoji buttons.
 	 */
-	public function get_buttons( $args ) {
+	public function display_buttons( $args ) {
 		$defaults = array(
 			'type' 		=> 'post',
 			'ID' 		=> get_the_ID(),
 			'align' 	=> 'left',
 			'usernames'	=> 10,
-			'emojis'	=> Emoji_Reaction::get_emojis(),
 		);
 		$args = wp_parse_args( $args, $defaults );
 
 		$max_usernames = $args['usernames'];
 
-		$emojis = $args['emojis'];
+		$emojis = apply_filters('emoji_reaction_emojis', Emoji_Reaction::get_emojis());
 		
 		$type = $args['type'];
 		$ID = $args['ID'];
@@ -135,9 +132,7 @@ class Emoji_Reaction_Public {
 		$likes = $this->get_likes( $ID, $type );
 		$total_count = $this->get_likes_count( $likes );
 
-		ob_start();
 		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reaction-public-display.php';
-		return ob_get_clean();
 	}
 
 	/**
