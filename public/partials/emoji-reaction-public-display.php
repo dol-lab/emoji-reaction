@@ -46,7 +46,7 @@
 		<?php endforeach; ?>
 	</div>
 
-	<div class="emoji-reaction-button-addnew-container ui icon bottom pointing dropdown <?php echo $align; ?>">
+	<div class="emoji-reaction-button-addnew-container ui icon top pointing dropdown <?php echo $align; ?>">
 		<button class="emoji-reaction-button-addnew">
 			<i class="icon-thumpup-plus"></i>
 		</button>

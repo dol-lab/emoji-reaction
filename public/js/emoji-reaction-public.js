@@ -5,11 +5,17 @@
 
 		if($('.emoji-reaction-wrapper').length > 0) {
 
-			$('.ui.dropdown').dropdown();
+			$('.ui.dropdown').dropdown({
+				direction: 'upward',
+			});
 			$('.emoji-reaction-button-popup').popup({
 				inline: true,
 				addTouchEvents: false,
 				variation: 'inverted',
+				position: 'top right',
+				onShow: function() {
+					$(this).parent().parent().find('.ui.dropdown').dropdown('hide');
+				}
 			});
 
 			// todo:
