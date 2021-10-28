@@ -7,7 +7,7 @@
 
  .emoji-reaction-wrapper {
     width: 100%;
-    padding: 10px;
+    padding: 10px 15px 10px 15px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -51,7 +51,7 @@
 .emoji-reaction-wrapper button.emoji-reaction-button.show-count:after {
     content: attr(data-count);
     display: inline-block;
-    margin-left: 0.2rem;
+    margin-left: 0.5rem;
     font-size: 0.75rem;
     color: #666;
 }
