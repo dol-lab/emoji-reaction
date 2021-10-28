@@ -193,7 +193,7 @@ class Emoji_Reaction_Public {
 			$likes = get_post_meta( $object_id, $this->meta_key, true );
 		}
 
-		return $likes;
+		return array_reverse( $likes ); // newest first
 	}
 
 	/**
