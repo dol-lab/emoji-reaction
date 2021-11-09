@@ -193,7 +193,12 @@ class Emoji_Reaction_Public {
 			$likes = get_post_meta( $object_id, $this->meta_key, true );
 		}
 
-		return array_reverse( $likes ); // newest first
+		foreach ( $likes as $key => $emoji_likes ) {
+			krsort( $emoji_likes );
+			$likes[ $key ] = $emoji_likes;
+		}
+
+		return $likes;
 	}
 
 	/**
@@ -210,6 +215,7 @@ class Emoji_Reaction_Public {
 	 */
 	private function save_like( $object_id, $object_type, $emoji, $user_id ) {
 		$likes = $this->get_likes( $object_id, $object_type );
+		$time = intval( time() );
 
 		if ( $emoji == '' ) {
 			return false;
@@ -222,9 +228,9 @@ class Emoji_Reaction_Public {
 				}
 			}
 
-			$likes[ $emoji ][] = $user_id;
+			$likes[ $emoji ][ $time ] = $user_id;
 		} else {
-			$likes = array( $emoji => array( $user_id ) );
+			$likes = array( $emoji => array( $time => $user_id ) );
 		}
 
 		if ( $object_type == 'comment' ) {
