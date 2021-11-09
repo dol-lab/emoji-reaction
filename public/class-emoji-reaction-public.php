@@ -193,9 +193,11 @@ class Emoji_Reaction_Public {
 			$likes = get_post_meta( $object_id, $this->meta_key, true );
 		}
 
-		foreach ( $likes as $key => $emoji_likes ) {
-			krsort( $emoji_likes );
-			$likes[ $key ] = $emoji_likes;
+		if ( ! empty( $likes ) ) {
+			foreach ( $likes as $key => $emoji_likes ) {
+				krsort( $emoji_likes );
+				$likes[ $key ] = $emoji_likes;
+			}
 		}
 
 		return $likes;
