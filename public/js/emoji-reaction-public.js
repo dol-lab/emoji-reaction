@@ -31,8 +31,6 @@
 				// prevent classes selected and active of semantic ui
 				$('.emoji-reaction-button').removeClass('selected active');
 
-				console.log('like');
-
 				var wrapper = $(this).closest('.emoji-reaction-wrapper');
 				var emoji = $(this).data('emoji');
 				var emoji_button;
@@ -91,8 +89,6 @@
 				}
 
 				save_action.done(function(result) {
-					console.log(result.data);
-
 					if (result.data.state == 'unliked') {
 						detach_user_name(emoji_button, result.data.user_id )
 					} else if (result.data.state == 'liked') {
