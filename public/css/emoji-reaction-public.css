@@ -34,14 +34,10 @@
     background-color: #e6e6e6;
 }
 
-.emoji-reaction-wrapper button.emoji-reaction-button.not-voted {
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
+.emoji-reaction-wrapper button.emoji-reaction-button.voted {
+    border-color: #777;
 }
-.emoji-reaction-wrapper button.emoji-reaction-button.not-voted:hover {
-    -webkit-filter: grayscale(0);
-    filter: grayscale(0);
-}
+
 .emoji-reaction-wrapper button.emoji-reaction-button:before {
     content: attr(data-emoji);
     display: inline-block;
@@ -53,7 +49,7 @@
     display: inline-block;
     margin-left: 0.5rem;
     font-size: 0.75rem;
-    color: #666;
+    color: #777;
 }
 
 /** buttons in emoji-reactions-container  */
