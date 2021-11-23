@@ -18,11 +18,6 @@
 				}
 			});
 
-			// todo:
-			/*$('.emoji-reaction-button-popup').on('taphold', function() {
-				$(this).popup('toggle');
-			});*/
-
 			// prevent classes selected and active of semantic ui
 			$('.emoji-reaction-button').removeClass('selected active');
 
