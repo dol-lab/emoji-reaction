@@ -1,8 +1,14 @@
 # Emoji Reaction
 
-**Important:** This is work in progress. Check issues for todos.
-
 A Wordpress plugin which allows emoji reactions on posts and comments by logged in users.
+
+- Version: 0.3.2
+- WordPress Version: 4.2 or higher
+- Tested up to: 5.8.2
+- License: GPL-2.0+
+- License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+
+**Important:** This is work in progress. Check issues for todos.
 
 ---
 
@@ -35,5 +41,3 @@ add_filter('emoji_reaction_emojis', 'my_emojis');
 ```
 
 Be aware: if you remove an emoji, the saved likes according to this emoji will remain in the database.
-
-
