@@ -317,12 +317,15 @@ class Emoji_Reaction_Public {
 	 *
 	 * @param   int $user_id        User id.
 	 *
-	 * @return  string      User display name.
+	 * @return  string      User display name or anonymous.
 	 */
 	public function get_user_name( $user_id ) {
 		$user_data = get_user_by( 'id', $user_id );
-
-		return $user_data->display_name;
+		$user_name = __( 'Anonymous', 'emoji-reaction' );
+		if ( ! empty( $user_data ) ) {
+			$user_name = $user_data->display_name;
+		}
+		return $user_name;
 	}
 
 	/**
