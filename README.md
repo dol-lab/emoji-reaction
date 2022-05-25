@@ -2,9 +2,9 @@
 
 A Wordpress plugin which allows emoji reactions on posts and comments by logged in users.
 
-- Version: 0.3.3
+- Version: 0.3.4
 - WordPress Version: 4.2 or higher
-- Tested up to: 5.8.2
+- Tested up to: 5.9.3
 - License: GPL-2.0+
 - License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
