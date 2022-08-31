@@ -59,7 +59,7 @@ class Emoji_Reaction_Public {
 	public function __construct( $plugin_name, $version ) {
 
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->version     = $version;
 
 		$this->meta_key = '_' . $plugin_name . '_likes';
 
@@ -109,27 +109,27 @@ class Emoji_Reaction_Public {
 	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
 	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
 	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
-	 *	   @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
+	 *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
 	 * }
 	 */
 	public function display_buttons( $args ) {
 		$defaults = array(
-			'type' 		=> 'post',
-			'ID' 		=> get_the_ID(),
-			'align' 	=> 'left',
-			'usernames'	=> 10,
+			'type'      => 'post',
+			'ID'        => get_the_ID(),
+			'align'     => 'left',
+			'usernames' => 10,
 		);
-		$args = wp_parse_args( $args, $defaults );
+		$args     = wp_parse_args( $args, $defaults );
 
 		$max_usernames = $args['usernames'];
 
-		$emojis = apply_filters('emoji_reaction_emojis', Emoji_Reaction::get_emojis());
-		
-		$type = $args['type'];
-		$ID = $args['ID'];
+		$emojis = apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_emojis() );
+
+		$type  = $args['type'];
+		$ID    = $args['ID'];
 		$align = $args['align'];
 
-		$likes = $this->get_likes( $ID, $type );
+		$likes       = $this->get_likes( $ID, $type );
 		$total_count = $this->get_likes_count( $likes );
 
 		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reaction-public-display.php';
@@ -149,28 +149,30 @@ class Emoji_Reaction_Public {
 			wp_send_json_error( null, 401 );
 		}
 
-		$object_id = $_POST['object_id'];
+		$object_id   = intval( $_POST['object_id'] );
 		$object_type = $_POST['object_type'];
-		$emoji = $_POST['emoji'];
-		$user_id = get_current_user_id();
+		$emoji       = $_POST['emoji'];
+		$user_id     = get_current_user_id();
 
-		if ( $_POST['unlike'] === 'true' ) {
-			$this->delete_like( $object_id, $object_type, $emoji, $user_id );
-			wp_send_json_success(
-				array(
-					'state' => 'unliked',
-					'user_id' => $user_id,
-				)
-			);
+		$state = $_POST['unlike'] === 'true' ? 'unliked' : 'liked';
+
+		if ( 'unliked' === $state ) {
+			$success = $this->delete_like( $object_id, $object_type, $emoji, $user_id );
+
 		} else {
-			$this->save_like( $object_id, $object_type, $emoji, $user_id );
+			$success = $this->save_like( $object_id, $object_type, $emoji, $user_id );
+		}
+
+		if ( $success ) {
 			wp_send_json_success(
 				array(
-					'state' => 'liked',
-					'user_id' => $user_id,
+					'state'     => $state,
+					'user_id'   => $user_id,
 					'user_name' => $this->get_user_name( $user_id ),
 				)
 			);
+		} else {
+			wp_send_json_error( array( 'message' => 'Your like could not be saved.' ) );
 		}
 	}
 
@@ -213,11 +215,11 @@ class Emoji_Reaction_Public {
 	 * @param   string $emoji          Emoji the user clicked on.
 	 * @param   int    $user_id        User ID to save.
 	 *
-	 * @return  int|bool    Meta ID if the key didn't exist, true on successful update, false on failure or if user ID already existed.
+	 * @return  bool   True on success, false on failure (or if the value passed is the same as in db)
 	 */
-	private function save_like( $object_id, $object_type, $emoji, $user_id ) {
+	private function save_like( int $object_id, $object_type, $emoji, $user_id ) {
 		$likes = $this->get_likes( $object_id, $object_type );
-		$time = intval( time() );
+		$time  = intval( time() );
 
 		if ( $emoji == '' ) {
 			return false;
@@ -229,19 +231,15 @@ class Emoji_Reaction_Public {
 					return false;
 				}
 			}
-
 			$likes[ $emoji ][ $time ] = $user_id;
 		} else {
 			$likes = array( $emoji => array( $time => $user_id ) );
 		}
 
-		if ( $object_type == 'comment' ) {
-			$update = update_comment_meta( $object_id, $this->meta_key, $likes );
-		} else {
-			$update = update_post_meta( $object_id, $this->meta_key, $likes );
-		}
+		$update   = update_metadata( $object_type, $object_id, $this->meta_key, $likes );
+		// $new_data = get_metadata( $object_type, $object_id, $this->meta_key );
 
-		return $update;
+		return is_int( $update ) ? true : $update;
 	}
 
 	/**
@@ -254,12 +252,13 @@ class Emoji_Reaction_Public {
 	 * @param   string $emoji          Emoji the user clicked on.
 	 * @param   int    $user_id        User ID to delete.
 	 *
-	 * @return  bool        True on success, false on failure.
+	 * @return  bool        True on success, false on failure (or if the value passed is the same as in db)
 	 */
 	private function delete_like( $object_id, $object_type, $emoji, $user_id ) {
 		$likes = $this->get_likes( $object_id, $object_type );
 
-		if ( ( $key = array_search( $user_id, $likes[ $emoji ] ) ) !== false ) {
+		$key = isset( $likes[ $emoji ] ) && is_array( $likes[ $emoji ] ) ? array_search( $user_id, $likes[ $emoji ] ) : false;
+		if ( $key !== false ) {
 			unset( $likes[ $emoji ][ $key ] );
 		} else {
 			return false;
@@ -284,7 +283,7 @@ class Emoji_Reaction_Public {
 			}
 		}
 
-		return $update;
+		return is_int( $update ) ? true : $update; // update_post/comment_meta returns an int on successful update.
 	}
 
 	/**
