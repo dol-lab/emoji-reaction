@@ -11,14 +11,14 @@
  *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
  *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
  *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
- *	   @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
+ *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
  *  }
- * 
+ *
  * @return  html    HTML of emoji buttons.
  */
 function emoji_reaction_get_buttons( $args ) {
-    ob_start();
-    do_action( 'emoji_reaction_display_buttons', $args );
+	ob_start();
+	do_action( 'emoji_reaction_display_buttons', $args );
 	return ob_get_clean();
 }
 
@@ -33,9 +33,9 @@ function emoji_reaction_get_buttons( $args ) {
  *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
  *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
  *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
- *	   @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
+ *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
  *  }
  */
 function emoji_reaction_display_buttons( $args ) {
-    do_action( 'emoji_reaction_display_buttons', $args );
+	do_action( 'emoji_reaction_display_buttons', $args );
 }

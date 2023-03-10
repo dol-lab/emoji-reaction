@@ -236,7 +236,7 @@ class Emoji_Reaction_Public {
 			$likes = array( $emoji => array( $time => $user_id ) );
 		}
 
-		$update   = update_metadata( $object_type, $object_id, $this->meta_key, $likes );
+		$update = update_metadata( $object_type, $object_id, $this->meta_key, $likes );
 		// $new_data = get_metadata( $object_type, $object_id, $this->meta_key );
 
 		return is_int( $update ) ? true : $update;
