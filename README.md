@@ -25,7 +25,7 @@ If you don't want to echo the result use the function `emoji_reaction_get_button
 
 ---
 
-To change the default set of emojis (👍, ❤️) add the filter `emoji_reaction_emojis`.
+To change the default set of emojis (👍, ❤️, 🙏) add the filter `emoji_reaction_emojis`.
 
 Example:
 

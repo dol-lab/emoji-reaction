@@ -27,7 +27,7 @@
     line-height: 1;
     padding: 5px 8px 5px 9px;
     transition: 0.5s;
-    min-width: 35px;
+    min-width: 25px;
 }
 .emoji-reaction-wrapper button.emoji-reaction-button:hover {
     -webkit-filter: grayscale(0);
@@ -36,7 +36,7 @@
 }
 
 .emoji-reaction-wrapper button.emoji-reaction-button.voted {
-    border-color: #777;
+    border-color: #aaa;
 }
 
 .emoji-reaction-wrapper button.emoji-reaction-button:before {
@@ -71,11 +71,13 @@
 }
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container {
     display: flex;
+	gap: 3px;
+	padding: 4px;
     /*flex-wrap: wrap; */ /** problems in safari, needs another solution if more than 3 emojis */
-    max-width: 140px;
+   /*  max-width: 140px; */
 }
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container button {
-    margin: 5px;
+    /* margin: 5px; */
 }
 .emoji-reaction-wrapper .emoji-reaction-button-addnew-container .item-container button.not-voted {
     border-color: transparent;

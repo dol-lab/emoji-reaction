@@ -109,7 +109,7 @@ class Emoji_Reaction_Public {
 	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
 	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
 	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
-	 *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_emojis().
+	 *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_default_emojis().
 	 * }
 	 */
 	public function display_buttons( $args ) {
@@ -123,7 +123,7 @@ class Emoji_Reaction_Public {
 
 		$max_usernames = $args['usernames'];
 
-		$emojis = apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_emojis() );
+		$emojis = apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() );
 
 		$type  = $args['type'];
 		$ID    = $args['ID'];

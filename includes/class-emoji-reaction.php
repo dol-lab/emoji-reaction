@@ -182,7 +182,7 @@ class Emoji_Reaction {
 		 * some infos on this: https://github.com/DevinVinson/WordPress-Plugin-Boilerplate/issues/218
 		 */
 		$this->loader->add_action( 'emoji_reaction_display_buttons', $plugin_public, 'display_buttons' );
-		$this->loader->add_filter( 'emoji_reaction_emojis', $this, 'get_emojis' );
+		$this->loader->add_filter( 'emoji_reaction_emojis', $this, 'get_default_emojis' );
 
 	}
 
@@ -199,7 +199,6 @@ class Emoji_Reaction {
 	 * The name of the plugin used to uniquely identify it within the context of
 	 * WordPress and to define internationalization functionality.
 	 *
-	 * @since     0.0.1
 	 * @return    string    The name of the plugin.
 	 */
 	public function get_plugin_name() {
@@ -209,7 +208,6 @@ class Emoji_Reaction {
 	/**
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
-	 * @since     0.0.1
 	 * @return    Emoji_Reaction_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
@@ -219,7 +217,6 @@ class Emoji_Reaction {
 	/**
 	 * Retrieve the version number of the plugin.
 	 *
-	 * @since     0.0.1
 	 * @return    string    The version number of the plugin.
 	 */
 	public function get_version() {
@@ -229,16 +226,16 @@ class Emoji_Reaction {
 	/**
 	 * Provide the list of emojis.
 	 *
-	 * @since     0.0.5
 	 * @return    array    Default emojis used in the plugin.
 	 *
 	 * @todo
 	 * - admin page, so this function has to be moved to a default settings function
 	 */
-	public static function get_emojis() {
+	public static function get_default_emojis() {
 		return array(
 			array( '👍', 'thumbs up' ),
 			array( '❤️', 'heart' ),
+			array( '🙏', 'thank you' ),
 		);
 	}
 
