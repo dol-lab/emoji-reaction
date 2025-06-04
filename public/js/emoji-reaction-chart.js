@@ -373,7 +373,7 @@ window.emojiReactionChart = (function () {
 						} else {
 							// Determine chart type from container or default to bar
 							const container = canvas.closest('.emoji-reaction-chart-container');
-							const chartType = container ? container.dataset.type || 'bar' : 'bar';
+							const chartType = container ? container.dataset.type || 'donut' : 'bar';
 							createChart(canvas, data, chartType);
 						}
 					}
@@ -388,6 +388,18 @@ window.emojiReactionChart = (function () {
 	} else {
 		setupEventListeners();
 	}
+
+	// Listen for new content and initialize charts that haven't been initialized yet
+	window.addEventListener('new-content', function (event) {
+		// Find all chart containers that haven't been initialized
+		const chartContainers = document.querySelectorAll('.emoji-reaction-chart-container:not([data-initialized])');
+
+		chartContainers.forEach(function (container) {
+			// Mark as initialized before calling init to prevent duplicate initialization
+			container.dataset.initialized = 'true';
+			init(container);
+		});
+	});
 
 	// Public API
 	return {
