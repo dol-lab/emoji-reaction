@@ -62,7 +62,6 @@ class Emoji_Reaction_Public {
 		$this->version     = $version;
 
 		$this->meta_key = '_' . $plugin_name . '_likes';
-
 	}
 
 	/**
@@ -76,7 +75,6 @@ class Emoji_Reaction_Public {
 		wp_enqueue_style( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.css', $this->version );
 		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', $this->version );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
-
 	}
 
 	/**
@@ -93,7 +91,6 @@ class Emoji_Reaction_Public {
 		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-dropdown' ), $this->version, false );
 
 		wp_localize_script( $this->plugin_name . '-public-js', 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
-
 	}
 
 	/**
@@ -132,7 +129,7 @@ class Emoji_Reaction_Public {
 		$likes       = $this->get_likes( $ID, $type );
 		$total_count = $this->get_likes_count( $likes );
 
-		require plugin_dir_path( dirname( __FILE__ ) ) . 'public/partials/emoji-reaction-public-display.php';
+		require plugin_dir_path( __DIR__ ) . 'public/partials/emoji-reaction-public-display.php';
 	}
 
 	/**
@@ -145,16 +142,57 @@ class Emoji_Reaction_Public {
 	 * @return  string  echo status for the ajax call.
 	 */
 	public function emoji_reaction_ajax_save_action() {
-		if ( ! wp_verify_nonce( $_POST['nonce'], '_emoji_reaction_action' ) ) {
-			wp_send_json_error( null, 401 );
+		// Check if user is logged in
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'You must be logged in to react.' ), 401 );
+			return;
 		}
 
-		$object_id   = intval( $_POST['object_id'] );
-		$object_type = $_POST['object_type'];
-		$emoji       = $_POST['emoji'];
-		$user_id     = get_current_user_id();
+		// Check if required POST data exists
+		if ( ! isset( $_POST['nonce'], $_POST['object_id'], $_POST['object_type'], $_POST['emoji'], $_POST['unlike'] ) ) {
+			wp_send_json_error( array( 'message' => 'Missing required data.' ), 400 );
+			return;
+		}
 
-		$state = $_POST['unlike'] === 'true' ? 'unliked' : 'liked';
+		// Verify nonce for CSRF protection
+		if ( ! wp_verify_nonce( wp_unslash( $_POST['nonce'] ), '_emoji_reaction_action' ) ) {
+			wp_send_json_error( array( 'message' => 'Security check failed.' ), 401 );
+			return;
+		}
+
+		// Sanitize and validate input data
+		$object_id   = intval( $_POST['object_id'] );
+		$object_type = sanitize_text_field( wp_unslash( $_POST['object_type'] ) );
+		$emoji       = sanitize_text_field( wp_unslash( $_POST['emoji'] ) );
+		$user_id     = get_current_user_id();
+		$unlike      = sanitize_text_field( wp_unslash( $_POST['unlike'] ) );
+
+		// Validate object type
+		if ( ! in_array( $object_type, array( 'post', 'comment' ), true ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid object type.' ), 400 );
+			return;
+		}
+
+		// Validate object ID
+		if ( $object_id <= 0 ) {
+			wp_send_json_error( array( 'message' => 'Invalid object ID.' ), 400 );
+			return;
+		}
+
+		// Validate emoji (check if it's in allowed list)
+		$allowed_emojis = array_column( apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() ), 0 );
+		if ( ! in_array( $emoji, $allowed_emojis, true ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid emoji.' ), 400 );
+			return;
+		}
+
+		// Check user permissions for the object
+		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
+			wp_send_json_error( array( 'message' => 'You do not have permission to react to this content.' ), 403 );
+			return;
+		}
+
+		$state = $unlike === 'true' ? 'unliked' : 'liked';
 
 		if ( 'unliked' === $state ) {
 			$success = $this->delete_like( $object_id, $object_type, $emoji, $user_id );
@@ -177,6 +215,48 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
+	 * Check if user can react to the specified object.
+	 *
+	 * @since 0.3.5
+	 *
+	 * @param   int    $object_id      Post or comment id.
+	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
+	 *
+	 * @return  bool   True if user can react, false otherwise.
+	 */
+	private function user_can_react_to_object( $object_id, $object_type ) {
+		if ( 'comment' === $object_type ) {
+			$comment = get_comment( $object_id );
+			if ( ! $comment ) {
+				return false; // Comment doesn't exist
+			}
+
+			// Check if comment is approved
+			if ( '1' !== $comment->comment_approved ) {
+				return false;
+			}
+
+			// Get the post this comment belongs to
+			$post_id = $comment->comment_post_ID;
+			$post    = get_post( $post_id );
+			if ( ! $post ) {
+				return false;
+			}
+
+			// Check if user can read the post
+			return is_post_publicly_viewable( $post );
+		} else {
+			$post = get_post( $object_id );
+			if ( ! $post ) {
+				return false; // Post doesn't exist
+			}
+
+			// Check if post is published and publicly viewable
+			return is_post_publicly_viewable( $post );
+		}
+	}
+
+	/**
 	 * Get user IDs associated to an emoji out of post or comment meta.
 	 *
 	 * @since 0.0.2
@@ -189,7 +269,7 @@ class Emoji_Reaction_Public {
 	private function get_likes( $object_id, $object_type ) {
 		$likes = array();
 
-		if ( $object_type == 'comment' ) {
+		if ( $object_type === 'comment' ) {
 			$likes = get_comment_meta( $object_id, $this->meta_key, true );
 		} else {
 			$likes = get_post_meta( $object_id, $this->meta_key, true );
@@ -221,7 +301,7 @@ class Emoji_Reaction_Public {
 		$likes = $this->get_likes( $object_id, $object_type );
 		$time  = intval( time() );
 
-		if ( $emoji == '' ) {
+		if ( $emoji === '' ) {
 			return false;
 		}
 
@@ -270,17 +350,15 @@ class Emoji_Reaction_Public {
 		}
 
 		if ( empty( $likes ) ) {
-			if ( $object_type == 'comment' ) {
+			if ( $object_type === 'comment' ) {
 				$update = delete_comment_meta( $object_id, $this->meta_key );
 			} else {
 				$update = delete_post_meta( $object_id, $this->meta_key );
 			}
-		} else {
-			if ( $object_type == 'comment' ) {
+		} elseif ( $object_type === 'comment' ) {
 				$update = update_comment_meta( $object_id, $this->meta_key, $likes );
-			} else {
-				$update = update_post_meta( $object_id, $this->meta_key, $likes );
-			}
+		} else {
+			$update = update_post_meta( $object_id, $this->meta_key, $likes );
 		}
 
 		return is_int( $update ) ? true : $update; // update_post/comment_meta returns an int on successful update.
@@ -300,7 +378,7 @@ class Emoji_Reaction_Public {
 
 		if ( ! empty( $likes ) ) {
 			foreach ( $likes as $emoji => $like ) {
-				if ( $emoji != '' ) {
+				if ( $emoji !== '' ) {
 					$count += sizeof( $like );
 				}
 			}
@@ -322,7 +400,7 @@ class Emoji_Reaction_Public {
 		$user_data = get_user_by( 'id', $user_id );
 		$user_name = __( 'Anonymous', 'emoji-reaction' );
 		if ( ! empty( $user_data ) ) {
-			$user_name = $user_data->display_name;
+			$user_name = sanitize_text_field( $user_data->display_name );
 		}
 		return $user_name;
 	}
