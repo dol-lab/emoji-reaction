@@ -77,7 +77,6 @@ class Emoji_Reaction {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-
 	}
 
 	/**
@@ -102,27 +101,26 @@ class Emoji_Reaction {
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-emoji-reaction-loader.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-emoji-reaction-i18n.php';
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-emoji-reaction-admin.php';
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-emoji-reaction-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-emoji-reaction-public.php';
+		require_once plugin_dir_path( __DIR__ ) . 'public/class-emoji-reaction-public.php';
 
 		$this->loader = new Emoji_Reaction_Loader();
-
 	}
 
 	/**
@@ -139,7 +137,6 @@ class Emoji_Reaction {
 		$plugin_i18n = new Emoji_Reaction_i18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-
 	}
 
 	/**
@@ -155,7 +152,6 @@ class Emoji_Reaction {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
 	}
 
 	/**
@@ -183,7 +179,6 @@ class Emoji_Reaction {
 		 */
 		$this->loader->add_action( 'emoji_reaction_display_buttons', $plugin_public, 'display_buttons' );
 		$this->loader->add_filter( 'emoji_reaction_emojis', $this, 'get_default_emojis' );
-
 	}
 
 	/**
@@ -238,5 +233,4 @@ class Emoji_Reaction {
 			array( '🙏', 'thank you' ),
 		);
 	}
-
 }

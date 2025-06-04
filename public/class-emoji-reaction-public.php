@@ -110,26 +110,95 @@ class Emoji_Reaction_Public {
 	 * }
 	 */
 	public function display_buttons( $args ) {
-		$defaults = array(
-			'type'      => 'post',
-			'ID'        => get_the_ID(),
-			'align'     => 'left',
-			'usernames' => 10,
+		$defaults            = array(
+			'type'            => 'post',
+			'ID'              => get_the_ID(),
+			'align'           => 'left',
+			'usernames'       => 10,
+			'emojis'          => apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() ),
+			'max_usernames'   => 10,
+			'current_user_id' => get_current_user_id(),
+			'nonce'           => wp_create_nonce( '_emoji_reaction_action' ),
 		);
-		$args     = wp_parse_args( $args, $defaults );
+		$args                = wp_parse_args( $args, $defaults );
+		$args['likes']       = $this->get_reactions( $args['ID'], $args['type'] );
+		$args['total_count'] = $this->get_reaction_count( $args['likes'] );
+		$this->render_display( (object) $args );
+	}
 
-		$max_usernames = $args['usernames'];
+	/**
+	 * Renders the emoji reaction display using prepared data.
+	 *
+	 * @since 0.0.1
+	 *
+	 * @param object $obj Display data containing all necessary variables.
+	 */
+	private function render_display( $obj ) {
+		// Build emoji reaction buttons
+		$emoji_buttons = '';
+		foreach ( $obj->emojis as $emoji ) {
+			$user_ids        = array();
+			$user_ids_max    = array();
+			$count           = 0;
+			$classname_voted = 'not-voted';
 
-		$emojis = apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() );
+			if ( ! empty( $obj->likes ) && array_key_exists( $emoji[0], $obj->likes ) ) {
+				$user_ids        = $this->uid_to_first_position( $obj->likes[ $emoji[0] ], $obj->current_user_id );
+				$count           = count( $user_ids );
+				$classname_voted = in_array( $obj->current_user_id, $user_ids ) ? ' voted' : ' not-voted';
+				$user_ids_max    = array_slice( $user_ids, 0, $obj->max_usernames );
+			}
 
-		$type  = $args['type'];
-		$ID    = $args['ID'];
-		$align = $args['align'];
+			// Build user list for popup
+			$user_list = '';
+			foreach ( $user_ids_max as $user_id ) {
+				$user_list .= '<li data-user-id="' . esc_attr( $user_id ) . '">' . esc_html( $this->get_user_name( $user_id ) ) . '</li>';
+			}
 
-		$likes       = $this->get_likes( $ID, $type );
-		$total_count = $this->get_likes_count( $likes );
+			$more_users = '';
+			if ( $count > $obj->max_usernames ) {
+				/* translators: %s: number of additional users who reacted */
+				$more_users = '<p>' . esc_html( sprintf( __( 'And %s more ...', 'emoji-reaction' ), ( $count - $obj->max_usernames ) ) ) . '</p>';
+			}
 
-		require plugin_dir_path( __DIR__ ) . 'public/partials/emoji-reaction-public-display.php';
+			$emoji_buttons .= '
+				<button class="emoji-reaction-button emoji-reaction-button-popup show-count ' . esc_attr( $classname_voted ) . '" data-emoji="' . esc_attr( $emoji[0] ) . '" data-count="' . esc_attr( $count ) . '" name="' . esc_attr( $emoji[1] ) . '"></button>
+				<div class="ui popup emoji-reaction-popup-container">
+					<ul class="emoji-reaction-usernames">' . $user_list . '</ul>' . $more_users . '
+				</div>
+			';
+		}
+
+		// Build dropdown menu items
+		$dropdown_items = '';
+		foreach ( $obj->emojis as $emoji ) {
+			$classname_voted = 'not-voted';
+			if ( ! empty( $obj->likes ) && array_key_exists( $emoji[0], $obj->likes ) ) {
+				$classname_voted = in_array( $obj->current_user_id, $obj->likes[ $emoji[0] ] ) ? ' voted' : ' not-voted';
+			}
+			$dropdown_items .= '
+				<button class="item emoji-reaction-button ' . esc_attr( $classname_voted ) . '" data-emoji="' . esc_attr( $emoji[0] ) . '" name="' . esc_attr( $emoji[1] ) . '"></button>';
+		}
+
+		$render = '
+			<div class="emoji-reaction-wrapper ' . esc_attr( $obj->align ) . '" data-object-id="' . esc_attr( $obj->ID ) . '" data-object-type="' . esc_attr( $obj->type ) . '" data-nonce="' . esc_attr( $obj->nonce ) . '" data-totalcount="' . esc_attr( $obj->total_count ) . '">
+				<div class="emoji-reactions-container">
+				' . $emoji_buttons . '
+				</div>
+				<div class="emoji-reaction-button-addnew-container ui icon top pointing dropdown ' . esc_attr( $obj->align ) . '">
+					<button class="emoji-reaction-button-addnew">
+					<i class="icon-thumpup-plus"></i>
+					</button>
+					<div class="menu">
+						<div class="item-container">
+						' . $dropdown_items . '
+						</div>
+					</div>
+				</div>
+			</div>
+		';
+
+		echo $render; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -195,10 +264,10 @@ class Emoji_Reaction_Public {
 		$state = $unlike === 'true' ? 'unliked' : 'liked';
 
 		if ( 'unliked' === $state ) {
-			$success = $this->delete_like( $object_id, $object_type, $emoji, $user_id );
+			$success = $this->delete_reaction( $object_id, $object_type, $emoji, $user_id );
 
 		} else {
-			$success = $this->save_like( $object_id, $object_type, $emoji, $user_id );
+			$success = $this->save_reaction( $object_id, $object_type, $emoji, $user_id );
 		}
 
 		if ( $success ) {
@@ -266,7 +335,7 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  array|bool  Array of user IDs associated to emojis.
 	 */
-	private function get_likes( $object_id, $object_type ) {
+	private function get_reactions( $object_id, $object_type ) {
 		$likes = array();
 
 		if ( $object_type === 'comment' ) {
@@ -297,8 +366,8 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  bool   True on success, false on failure (or if the value passed is the same as in db)
 	 */
-	private function save_like( int $object_id, $object_type, $emoji, $user_id ) {
-		$likes = $this->get_likes( $object_id, $object_type );
+	private function save_reaction( int $object_id, $object_type, $emoji, $user_id ) {
+		$likes = $this->get_reactions( $object_id, $object_type );
 		$time  = intval( time() );
 
 		if ( $emoji === '' ) {
@@ -334,8 +403,8 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  bool        True on success, false on failure (or if the value passed is the same as in db)
 	 */
-	private function delete_like( $object_id, $object_type, $emoji, $user_id ) {
-		$likes = $this->get_likes( $object_id, $object_type );
+	private function delete_reaction( $object_id, $object_type, $emoji, $user_id ) {
+		$likes = $this->get_reactions( $object_id, $object_type );
 
 		$key = isset( $likes[ $emoji ] ) && is_array( $likes[ $emoji ] ) ? array_search( $user_id, $likes[ $emoji ] ) : false;
 		if ( $key !== false ) {
@@ -373,7 +442,7 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  int         Number of likes.
 	 */
-	public function get_likes_count( $likes ) {
+	public function get_reaction_count( $likes ) {
 		$count = 0;
 
 		if ( ! empty( $likes ) ) {
@@ -412,9 +481,15 @@ class Emoji_Reaction_Public {
 	 *
 	 * @param   int $user_id        User id.
 	 *
-	 * @return  array      User ids.
+	 * @return  int[]      User ids.
 	 */
-	public function userid_to_first_position( $user_ids, $user_id ) {
+	public function uid_to_first_position( $user_ids, $user_id ): array {
+		// Ensure user_id is an integer
+		$user_id = intval( $user_id );
+
+		// Ensure all user_ids are integers
+		$user_ids = array_map( 'intval', $user_ids );
+
 		if ( in_array( $user_id, $user_ids ) ) {
 			array_unshift( $user_ids, $user_id );
 			$user_ids = array_unique( $user_ids );
