@@ -234,9 +234,17 @@ class Emoji_Reaction {
 	 */
 	public static function get_default_emojis() {
 		return array(
-			array( '👍', 'thumbs up' ),
-			array( '❤️', 'heart' ),
-			array( '🙏', 'thank you' ),
+			array( '👍', __( 'thumbs up', 'emoji-reaction' ) ),
+			array( '👎', __( 'thumbs down', 'emoji-reaction' ) ),
+			array( '❤️', __( 'heart', 'emoji-reaction' ) ),
+			array( '🔥', __( 'fire', 'emoji-reaction' ) ),
+			array( '😂', __( 'laugh', 'emoji-reaction' ) ),
+			array( '😮', __( 'surprised', 'emoji-reaction' ) ),
+			array( '🍎', __( 'apple', 'emoji-reaction' ) ),
+			array( '🍐', __( 'pear', 'emoji-reaction' ) ),
+			array( '🍓', __( 'strawberry', 'emoji-reaction' ) ),
+			array( '🍊', __( 'orange', 'emoji-reaction' ) ),
+			array( '🍉', __( 'watermelon', 'emoji-reaction' ) ),
 		);
 	}
 }

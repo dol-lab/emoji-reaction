@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Emoji Reaction\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 10:46+0000\n"
-"PO-Revision-Date: 2025-06-04 15:15+0000\n"
+"PO-Revision-Date: 2025-06-04 14:56+0000\n"
 "Last-Translator: Till J\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -32,10 +32,6 @@ msgstr "Und %s weitere ..."
 msgid "Anonymous"
 msgstr "Anonymus"
 
-#: includes/class-emoji-reaction.php:244
-msgid "apple"
-msgstr "Apfel"
-
 #. Author of the plugin
 #, fuzzy
 msgid "Digital Open Learning Lab"
@@ -45,14 +41,6 @@ msgstr "Digital Open Learning Lab"
 #, fuzzy
 msgid "Emoji Reaction"
 msgstr "Emoji-Reaktion"
-
-#: includes/class-emoji-reaction.php:243
-msgid "fire"
-msgstr "Feuer"
-
-#: includes/class-emoji-reaction.php:239
-msgid "heart"
-msgstr "Herz"
 
 #. URI of the plugin
 #, fuzzy
@@ -69,10 +57,6 @@ msgstr "https://spaces.kisd.de"
 msgid "Invalid request."
 msgstr "Ungültige Anfrage."
 
-#: includes/class-emoji-reaction.php:240
-msgid "laugh"
-msgstr "Lachen"
-
 #: includes/class-emoji-reaction-chart.php:176
 #, fuzzy
 msgid "Loading chart..."
@@ -87,14 +71,6 @@ msgstr "Keine Post-ID für die Karte verfügbar."
 #, fuzzy
 msgid "No reactions yet"
 msgstr "Noch keine Reaktionen"
-
-#: includes/class-emoji-reaction.php:247
-msgid "orange"
-msgstr "Orange"
-
-#: includes/class-emoji-reaction.php:245
-msgid "pear"
-msgstr "birne"
 
 #: admin/class-emoji-reaction-admin.php:124
 #, fuzzy
@@ -111,36 +87,60 @@ msgstr "Reaktionen"
 msgid "Refresh chart"
 msgstr "Tabelle aktualisieren"
 
-#: includes/class-emoji-reaction.php:241
-msgid "sad"
-msgstr "Traurig"
-
 #: admin/class-emoji-reaction-admin.php:118
 #, fuzzy
 msgid "Security check failed."
 msgstr "Sicherheitsprüfung fehlgeschlagen."
 
-#: includes/class-emoji-reaction.php:246
-msgid "strawberry"
-msgstr "Erdbeere"
-
-#: includes/class-emoji-reaction.php:242
-msgid "surprised"
-msgstr "Überrascht"
-
-#: includes/class-emoji-reaction.php:238
-msgid "thumbs down"
-msgstr "Daumen runter"
-
-#: includes/class-emoji-reaction.php:237
-msgid "thumbs up"
-msgstr "Daumen hoch"
-
-#: includes/class-emoji-reaction.php:248
-msgid "watermelon"
-msgstr "Wassermelone"
-
 #: admin/class-emoji-reaction-admin.php:129
 #, fuzzy
 msgid "You do not have permission to edit this post."
 msgstr "Du hast nicht die Erlaubnis, diesen Beitrag zu bearbeiten."
+
+#: includes/class-emoji-reaction.php:235
+msgid "thumbs up"
+msgstr "Daumen hoch"
+
+#: includes/class-emoji-reaction.php:236
+msgid "thumbs down"
+msgstr "Daumen runter"
+
+#: includes/class-emoji-reaction.php:237
+msgid "heart"
+msgstr "Herz"
+
+#: includes/class-emoji-reaction.php:238
+msgid "laugh"
+msgstr "Lachen"
+
+#: includes/class-emoji-reaction.php:239
+msgid "sad"
+msgstr "Traurig"
+
+#: includes/class-emoji-reaction.php:240
+msgid "surprised"
+msgstr "Überrascht"
+
+#: includes/class-emoji-reaction.php:241
+msgid "fire"
+msgstr "Feuer"
+
+#: includes/class-emoji-reaction.php:242
+msgid "apple"
+msgstr "Apfel"
+
+#: includes/class-emoji-reaction.php:243
+msgid "pineapple"
+msgstr "Ananas"
+
+#: includes/class-emoji-reaction.php:244
+msgid "strawberry"
+msgstr "Erdbeere"
+
+#: includes/class-emoji-reaction.php:245
+msgid "orange"
+msgstr "Orange"
+
+#: includes/class-emoji-reaction.php:246
+msgid "watermelon"
+msgstr "Wassermelone"
