@@ -70,9 +70,9 @@ class Emoji_Reaction_Public {
 		 * @since    0.0.1
 		 */
 	public function enqueue_styles() {
-		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', $this->version );
-		wp_enqueue_style( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.css', $this->version );
-		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', $this->version );
+		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', '2.9.4' );
+		wp_enqueue_style( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.css', '2.9.4' );
+		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', '2.9.4' );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 		wp_enqueue_style( $this->plugin_name . '-chart', plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-chart.css', array(), $this->version, 'all' );
 	}
@@ -84,9 +84,9 @@ class Emoji_Reaction_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.js', array( 'jquery' ), $this->version, false );
-		wp_enqueue_script( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), $this->version, false );
-		wp_enqueue_script( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.js', array( 'jquery' ), '2.9.4', false );
+		wp_enqueue_script( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), '2.9.4', false );
+		wp_enqueue_script( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.js', array( 'jquery' ), '2.9.4', false );
 
 		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-dropdown' ), $this->version, false );
 
