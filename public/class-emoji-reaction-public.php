@@ -195,13 +195,11 @@ class Emoji_Reaction_Public {
 				<div class="emoji-reactions-container">
 				' . $emoji_buttons . '
 				</div>
-				<div class="emoji-reaction-button-addnew-container ui icon top pointing dropdown ' . esc_attr( $obj->align ) . '">
-					<button class="emoji-reaction-button-addnew">
-					<i class="icon-thumpup-plus"></i>
-					</button>
-					<div class="menu">
-						<div class="item-container">
-						' . $dropdown_items . '
+				<div class="emoji-reaction-button-addnew-container ">
+					<div class="emoji-reaction-button-addnew ui icon top pointing dropdown center">
+						<i class="icon-thumpup-plus"></i>
+						<div class="menu">
+							<div class="item-container">' . $dropdown_items . '</div>
 						</div>
 					</div>
 				</div>

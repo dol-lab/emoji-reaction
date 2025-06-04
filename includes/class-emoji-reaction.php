@@ -245,6 +245,7 @@ class Emoji_Reaction {
 			array( '🍓', __( 'strawberry', 'emoji-reaction' ) ),
 			array( '🍊', __( 'orange', 'emoji-reaction' ) ),
 			array( '🍉', __( 'watermelon', 'emoji-reaction' ) ),
+			array( '🍇', __( 'grapes', 'emoji-reaction' ) ),
 		);
 	}
 }

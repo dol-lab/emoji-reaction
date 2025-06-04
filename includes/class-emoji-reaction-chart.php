@@ -201,7 +201,9 @@ class Emoji_Reaction_Chart {
 				<script>
 					(() => {
 						const parentOfScript = document.currentScript?.parentNode;
-						document.addEventListener('DOMContentLoaded', () => emojiReactionChart.init(parentOfScript) );
+						setTimeout(() => {
+							document.addEventListener('DOMContentLoaded', () => emojiReactionChart.init(parentOfScript) );
+						}, 1);
 					})()
 				</script>
 			</div>
@@ -245,10 +247,10 @@ class Emoji_Reaction_Chart {
 		$reactions = get_post_meta( $post_id, $this->meta_key, true );
 		$emojis    = apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() );
 
-		$labels           = array();
-		$data             = array();
-		$backgroundColors = array();
-		$borderColors     = array();
+		$labels            = array();
+		$data              = array();
+		$background_colors = array();
+		$border_colors     = array();
 
 		// Default colors for charts
 		$colors = array(
@@ -292,9 +294,9 @@ class Emoji_Reaction_Chart {
 					$labels[] = $emoji_unicode . ' ' . ucfirst( $emoji_name );
 					$data[]   = $count;
 
-					$color              = $colors[ $color_index % count( $colors ) ];
-					$backgroundColors[] = $color['bg'];
-					$borderColors[]     = $color['border'];
+					$color               = $colors[ $color_index % count( $colors ) ];
+					$background_colors[] = $color['bg'];
+					$border_colors[]     = $color['border'];
 
 					++$color_index;
 					$has_reactions = true;
@@ -318,8 +320,8 @@ class Emoji_Reaction_Chart {
 				array(
 					'label'           => __( 'Reactions', 'emoji-reaction' ),
 					'data'            => $data,
-					'backgroundColor' => $backgroundColors,
-					'borderColor'     => $borderColors,
+					'backgroundColor' => $background_colors,
+					'borderColor'     => $border_colors,
 					'borderWidth'     => 1,
 				),
 			),

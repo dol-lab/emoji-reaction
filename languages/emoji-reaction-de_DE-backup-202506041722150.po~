@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Emoji Reaction\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 10:46+0000\n"
-"PO-Revision-Date: 2025-06-04 17:22+0000\n"
+"PO-Revision-Date: 2025-06-04 17:21+0000\n"
 "Last-Translator: Till J\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -51,9 +51,8 @@ msgid "fire"
 msgstr "Feuer"
 
 #: includes/class-emoji-reaction.php:248
-#, fuzzy
 msgid "grapes"
-msgstr "Trauben"
+msgstr ""
 
 #: includes/class-emoji-reaction.php:239
 msgid "heart"
