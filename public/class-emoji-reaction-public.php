@@ -99,7 +99,14 @@ class Emoji_Reaction_Public {
 		// Enqueue chart messages handling
 		wp_enqueue_script( $this->plugin_name . '-chart-messages', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart-messages.js', array(), $this->version, true );
 
-		wp_localize_script( $this->plugin_name . '-public-js', 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+		wp_localize_script(
+			$this->plugin_name . '-public-js',
+			'emoji_reaction',
+			array(
+				'ajax_url'          => admin_url( 'admin-ajax.php' ),
+				'thumbs_down_alert' => __( "We love constructive feedback! How about a comment on what can be improved instead? Pro tip: start with something positive 😉 \nStill want to continue?", 'emoji-reaction' ),
+			)
+		);
 		wp_localize_script( $this->plugin_name . '-chart-js', 'emoji_reaction_chart', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 	}
 

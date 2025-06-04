@@ -60,6 +60,13 @@
 				unlike = true;
 			}
 
+			// Check if this is a thumbs down emoji and user is not removing their reaction
+			if (emoji === '👎' && !unlike) {
+				if (!confirm(emoji_reaction.thumbs_down_alert)) {
+					return; // User cancelled, don't proceed with the reaction
+				}
+			}
+
 			var data = {
 				action: 'emoji_reaction_ajax_save_action',
 				object_id: object_id,

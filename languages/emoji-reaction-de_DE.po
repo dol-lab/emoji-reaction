@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Emoji Reaction\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 10:46+0000\n"
-"PO-Revision-Date: 2025-06-04 17:22+0000\n"
+"PO-Revision-Date: 2025-06-04 17:44+0000\n"
 "Last-Translator: Till J\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -23,12 +23,12 @@ msgstr ""
 "hinzu."
 
 #. %s: number of additional users who reacted
-#: public/class-emoji-reaction-public.php:171
+#: public/class-emoji-reaction-public.php:178
 #, php-format
 msgid "And %s more ..."
 msgstr "Und %s weitere ..."
 
-#: public/class-emoji-reaction-public.php:480
+#: public/class-emoji-reaction-public.php:487
 msgid "Anonymous"
 msgstr "Anonymus"
 
@@ -140,6 +140,21 @@ msgstr "Daumen hoch"
 #: includes/class-emoji-reaction.php:247
 msgid "watermelon"
 msgstr "Wassermelone"
+
+#: public/class-emoji-reaction-public.php:107
+#| msgid ""
+#| "We love constructive feedback. Think about writing a comment, what can be "
+#| "improved instead. Pro strats: start with something positive :) Still want "
+#| "to continue?"
+msgid ""
+"We love constructive feedback! How about a comment on what can be improved "
+"instead? Pro tip: start with something positive 😉 \n"
+"Still want to continue?"
+msgstr ""
+"Wir lieben konstruktives Feedback. Vielleicht schreibst du stattdessen einen "
+"Kommentar, der beschreibt, was verbessert werden könnte? Pro-Tipp: Beginne "
+"mit etwas Positivem 😉\n"
+"Trotzdem fortfahren?"
 
 #: admin/class-emoji-reaction-admin.php:129
 #, fuzzy

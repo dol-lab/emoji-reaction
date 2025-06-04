@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Emoji Reaction\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 10:46+0000\n"
-"PO-Revision-Date: 2025-06-04 14:56+0000\n"
+"PO-Revision-Date: 2025-06-04 17:41+0000\n"
 "Last-Translator: Till J\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -23,14 +23,18 @@ msgstr ""
 "hinzu."
 
 #. %s: number of additional users who reacted
-#: public/class-emoji-reaction-public.php:171
+#: public/class-emoji-reaction-public.php:178
 #, php-format
 msgid "And %s more ..."
 msgstr "Und %s weitere ..."
 
-#: public/class-emoji-reaction-public.php:482
+#: public/class-emoji-reaction-public.php:487
 msgid "Anonymous"
 msgstr "Anonymus"
+
+#: includes/class-emoji-reaction.php:243
+msgid "apple"
+msgstr "Apfel"
 
 #. Author of the plugin
 #, fuzzy
@@ -41,6 +45,19 @@ msgstr "Digital Open Learning Lab"
 #, fuzzy
 msgid "Emoji Reaction"
 msgstr "Emoji-Reaktion"
+
+#: includes/class-emoji-reaction.php:240
+msgid "fire"
+msgstr "Feuer"
+
+#: includes/class-emoji-reaction.php:248
+#, fuzzy
+msgid "grapes"
+msgstr "Trauben"
+
+#: includes/class-emoji-reaction.php:239
+msgid "heart"
+msgstr "Herz"
 
 #. URI of the plugin
 #, fuzzy
@@ -57,6 +74,10 @@ msgstr "https://spaces.kisd.de"
 msgid "Invalid request."
 msgstr "Ungültige Anfrage."
 
+#: includes/class-emoji-reaction.php:241
+msgid "laugh"
+msgstr "Lachen"
+
 #: includes/class-emoji-reaction-chart.php:176
 #, fuzzy
 msgid "Loading chart..."
@@ -67,17 +88,25 @@ msgstr "Tabelle laden..."
 msgid "No post ID available for chart."
 msgstr "Keine Post-ID für die Karte verfügbar."
 
-#: includes/class-emoji-reaction-chart.php:311
+#: includes/class-emoji-reaction-chart.php:313
 #, fuzzy
 msgid "No reactions yet"
 msgstr "Noch keine Reaktionen"
+
+#: includes/class-emoji-reaction.php:246
+msgid "orange"
+msgstr "Orange"
+
+#: includes/class-emoji-reaction.php:244
+msgid "pear"
+msgstr "birne"
 
 #: admin/class-emoji-reaction-admin.php:124
 #, fuzzy
 msgid "Post not found."
 msgstr "Beitrag nicht gefunden."
 
-#: includes/class-emoji-reaction-chart.php:319
+#: includes/class-emoji-reaction-chart.php:321
 #, fuzzy
 msgid "Reactions"
 msgstr "Reaktionen"
@@ -92,55 +121,42 @@ msgstr "Tabelle aktualisieren"
 msgid "Security check failed."
 msgstr "Sicherheitsprüfung fehlgeschlagen."
 
-#: admin/class-emoji-reaction-admin.php:129
-#, fuzzy
-msgid "You do not have permission to edit this post."
-msgstr "Du hast nicht die Erlaubnis, diesen Beitrag zu bearbeiten."
+#: includes/class-emoji-reaction.php:245
+msgid "strawberry"
+msgstr "Erdbeere"
 
-#: includes/class-emoji-reaction.php:235
-msgid "thumbs up"
-msgstr "Daumen hoch"
+#: includes/class-emoji-reaction.php:242
+msgid "surprised"
+msgstr "Überrascht"
 
-#: includes/class-emoji-reaction.php:236
+#: includes/class-emoji-reaction.php:238
 msgid "thumbs down"
 msgstr "Daumen runter"
 
 #: includes/class-emoji-reaction.php:237
-msgid "heart"
-msgstr "Herz"
+msgid "thumbs up"
+msgstr "Daumen hoch"
 
-#: includes/class-emoji-reaction.php:238
-msgid "laugh"
-msgstr "Lachen"
-
-#: includes/class-emoji-reaction.php:239
-msgid "sad"
-msgstr "Traurig"
-
-#: includes/class-emoji-reaction.php:240
-msgid "surprised"
-msgstr "Überrascht"
-
-#: includes/class-emoji-reaction.php:241
-msgid "fire"
-msgstr "Feuer"
-
-#: includes/class-emoji-reaction.php:242
-msgid "apple"
-msgstr "Apfel"
-
-#: includes/class-emoji-reaction.php:243
-msgid "pineapple"
-msgstr "Ananas"
-
-#: includes/class-emoji-reaction.php:244
-msgid "strawberry"
-msgstr "Erdbeere"
-
-#: includes/class-emoji-reaction.php:245
-msgid "orange"
-msgstr "Orange"
-
-#: includes/class-emoji-reaction.php:246
+#: includes/class-emoji-reaction.php:247
 msgid "watermelon"
 msgstr "Wassermelone"
+
+#: public/class-emoji-reaction-public.php:107
+#, fuzzy
+#| msgid ""
+#| "We love constructive feedback. Think about writing a comment, what can be "
+#| "improved instead. Pro strats: start with something positive :) Still want "
+#| "to continue?"
+msgid ""
+"We love constructive feedback! How about a comment on what can be improved "
+"instead? Pro tip: start with something positive 😉 \n"
+"Still want to continue?"
+msgstr ""
+"Wir lieben konstruktives Feedback. Denke daran, einen Kommentar zu schreiben,"
+" was stattdessen verbessert werden kann. Pro-Tipp: Beginne mit etwas "
+"Positivem :) Möchtest du trotzdem fortfahren?"
+
+#: admin/class-emoji-reaction-admin.php:129
+#, fuzzy
+msgid "You do not have permission to edit this post."
+msgstr "Du hast nicht die Erlaubnis, diesen Beitrag zu bearbeiten."
