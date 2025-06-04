@@ -78,6 +78,5 @@ function run_emoji_reaction() {
 
 	$plugin = new Emoji_Reaction();
 	$plugin->run();
-
 }
 run_emoji_reaction();

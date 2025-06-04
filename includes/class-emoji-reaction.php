@@ -120,6 +120,11 @@ class Emoji_Reaction {
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'public/class-emoji-reaction-public.php';
 
+		/**
+		 * The class responsible for chart functionality.
+		 */
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-chart.php';
+
 		$this->loader = new Emoji_Reaction_Loader();
 	}
 
@@ -164,6 +169,7 @@ class Emoji_Reaction {
 	private function define_public_hooks() {
 
 		$plugin_public = new Emoji_Reaction_Public( $this->get_plugin_name(), $this->get_version() );
+		$plugin_chart  = new Emoji_Reaction_Chart( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );

@@ -1,0 +1,232 @@
+/**
+ * Emoji Reaction Chart styles
+ *
+ * @since 0.4.0
+ */
+
+.emoji-reaction-chart-container {
+	position: relative;
+	width: 100%;
+	max-width: 600px;
+	margin: 20px auto;
+
+	&:hover .emoji-reaction-chart-refresh,
+	&:focus .emoji-reaction-chart-refresh,
+	&[data-clicked="true"] .emoji-reaction-chart-refresh {
+		opacity: 0.8;
+	}
+}
+
+.emoji-reaction-chart-header {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 10px;
+	margin-top: 5px;
+}
+
+.emoji-reaction-chart-refresh {
+	background: #f1f1f1;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 12px 14px;
+	cursor: pointer;
+	font-size: 14px;
+	color: #666;
+	transition: all 0.2s ease;
+	opacity: 0.01;
+
+	&:hover {
+		background: #e0e0e0;
+		color: #333;
+		/* transform: rotate(180deg); */
+	}
+
+	&:focus {
+		outline: 2px solid #005cee;
+		outline-offset: 2px;
+		opacity: 1;
+	}
+
+	& i {
+		transition: transform 0.3s ease;
+	}
+
+	&.loading i {
+		animation: emoji-reaction-chart-spin 1s linear infinite;
+	}
+
+}
+
+.emoji-reaction-chart-container canvas {
+	max-width: 100%;
+	height: auto;
+	min-height: 200px;
+}
+
+.emoji-reaction-chart-loading {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	color: #666;
+	font-size: 16px;
+	background: rgba(255, 255, 255, 0.9);
+	padding: 20px;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	display: none;
+}
+
+/* Show loading when data-loading="true" */
+.emoji-reaction-chart-container[data-loading="true"] .emoji-reaction-chart-loading {
+	display: block;
+}
+
+/* Hide canvas when loading */
+.emoji-reaction-chart-container[data-loading="true"] canvas {
+	display: none;
+}
+
+/* Hide refresh button when loading */
+.emoji-reaction-chart-container[data-loading="true"] .emoji-reaction-chart-refresh {
+	display: none;
+}
+
+.emoji-reaction-chart-loading::before {
+	content: '';
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	margin-right: 10px;
+	border: 2px solid #ddd;
+	border-top: 2px solid #666;
+	border-radius: 50%;
+	animation: emoji-reaction-chart-spin 1s linear infinite;
+	vertical-align: middle;
+}
+
+.emoji-reaction-no-reactions {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	color: #888;
+	font-size: 16px;
+	font-style: italic;
+	background: rgba(255, 255, 255, 0.95);
+	padding: 30px 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	border: 2px dashed #ddd;
+	min-width: 200px;
+}
+
+.emoji-reaction-no-reactions::before {
+	content: '😶';
+	font-style: normal;
+	display: block;
+	font-size: 48px;
+	margin-bottom: 10px;
+	opacity: 0.7;
+}
+
+@keyframes emoji-reaction-chart-spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Block editor preview styles */
+.emoji-reaction-chart-block-preview {
+	border: 2px dashed #ccc !important;
+	padding: 20px !important;
+	text-align: center !important;
+	background-color: #f9f9f9 !important;
+	border-radius: 4px !important;
+}
+
+.emoji-reaction-chart-block-preview h4 {
+	margin: 0 0 10px !important;
+	color: #666 !important;
+}
+
+.emoji-reaction-chart-block-preview p {
+	color: #999 !important;
+	font-size: 14px !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+	.emoji-reaction-chart-container {
+		margin: 15px auto;
+		max-width: 100%;
+	}
+
+	.emoji-reaction-chart-container canvas {
+		min-height: 150px;
+	}
+
+	.emoji-reaction-chart-loading {
+		font-size: 14px;
+		padding: 15px;
+	}
+
+	.emoji-reaction-no-reactions {
+		font-size: 14px;
+		padding: 25px 15px;
+		min-width: 180px;
+	}
+
+	.emoji-reaction-no-reactions::before {
+		font-size: 36px;
+		margin-bottom: 8px;
+	}
+}
+
+@media (max-width: 480px) {
+	.emoji-reaction-chart-container {
+		margin: 10px auto;
+	}
+
+	.emoji-reaction-chart-container canvas {
+		min-height: 120px;
+	}
+
+	.emoji-reaction-chart-loading {
+		font-size: 12px;
+		padding: 10px;
+	}
+
+	.emoji-reaction-no-reactions {
+		font-size: 12px;
+		padding: 20px 10px;
+		min-width: 150px;
+	}
+
+	.emoji-reaction-no-reactions::before {
+		font-size: 28px;
+		margin-bottom: 6px;
+	}
+}
+
+/* Accessibility improvements */
+.emoji-reaction-chart-container canvas:focus {
+	outline: 2px solid #005cee;
+	outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+	.emoji-reaction-chart-loading {
+		display: none !important;
+	}
+}

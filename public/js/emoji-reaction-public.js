@@ -99,6 +99,21 @@
 				} else if (result.data.state == 'liked') {
 					append_user_name(emoji_button, result.data.user_id, result.data.user_name)
 				}
+
+				// Fire custom event to notify charts of the change
+				var postId = result.data.object_type === 'post' ? result.data.post_id : null;
+				if (postId) {
+					var event = new CustomEvent('emojiReactionChanged', {
+						detail: {
+							postId: postId,
+							objectType: result.data.object_type,
+							emoji: emoji,
+							state: result.data.state,
+							userId: result.data.user_id
+						}
+					});
+					window.dispatchEvent(event);
+				}
 			});
 
 			save_action.fail(function (jqXHR, textStatus, errorThrown) {

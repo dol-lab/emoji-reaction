@@ -64,17 +64,17 @@ class Emoji_Reaction_Public {
 		$this->meta_key = '_' . $plugin_name . '_likes';
 	}
 
-	/**
-	 * Register the stylesheets for the public-facing side of the site.
-	 *
-	 * @since    0.0.1
-	 */
+		/**
+		 * Register the stylesheets for the public-facing side of the site.
+		 *
+		 * @since    0.0.1
+		 */
 	public function enqueue_styles() {
-
 		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', $this->version );
 		wp_enqueue_style( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.css', $this->version );
 		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', $this->version );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name . '-chart', plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-chart.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -90,7 +90,17 @@ class Emoji_Reaction_Public {
 
 		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-dropdown' ), $this->version, false );
 
+		// Enqueue Chart.js from CDN
+		wp_enqueue_script( 'chart-js', plugin_dir_url( __FILE__ ) . 'lib/chart.umd.min.js', array(), '4.4.1', true );
+
+		// Enqueue chart functionality
+		wp_enqueue_script( $this->plugin_name . '-chart-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart.js', array( 'chart-js' ), $this->version, true );
+
+		// Enqueue chart messages handling
+		wp_enqueue_script( $this->plugin_name . '-chart-messages', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart-messages.js', array(), $this->version, true );
+
 		wp_localize_script( $this->plugin_name . '-public-js', 'emoji_reaction', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+		wp_localize_script( $this->plugin_name . '-chart-js', 'emoji_reaction_chart', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 	}
 
 	/**
@@ -273,9 +283,11 @@ class Emoji_Reaction_Public {
 		if ( $success ) {
 			wp_send_json_success(
 				array(
-					'state'     => $state,
-					'user_id'   => $user_id,
-					'user_name' => $this->get_user_name( $user_id ),
+					'state'       => $state,
+					'user_id'     => $user_id,
+					'user_name'   => $this->get_user_name( $user_id ),
+					'post_id'     => $object_id,
+					'object_type' => $object_type,
 				)
 			);
 		} else {

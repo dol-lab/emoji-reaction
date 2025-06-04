@@ -41,3 +41,24 @@ add_filter('emoji_reaction_emojis', 'my_emojis');
 ```
 
 Be aware: if you remove an emoji, the saved likes according to this emoji will remain in the database.
+
+---
+
+## Chart Feature
+
+The plugin includes chart functionality to visualize emoji reactions:
+
+**Shortcode**: `[emoji_reaction_chart]` - Display charts with optional parameters:
+- `type`: "bar" or "donut" (default: "donut")
+- `post_id`: Specific post ID (default: current post)
+
+**Gutenberg Block**: "Emoji Reaction Chart" block available in the editor
+
+**Add Chart Link**: Use `emoji_reaction_get_add_chart_link($post_id)` to generate secure links that add chart blocks to posts (requires edit permissions).
+
+Example usage:
+```
+[emoji_reaction_chart type="bar" post_id="123"]
+```
+
+Charts use Chart.js and load data asynchronously. Both shortcode and Gutenberg block are responsive and work on mobile devices.
