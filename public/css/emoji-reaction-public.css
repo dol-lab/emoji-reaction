@@ -49,6 +49,10 @@
 	font-size: 0.8125rem;
 }
 
+.item-container button.emoji-reaction-button:before {
+	font-size: 1.0rem;
+}
+
 .emoji-reaction-wrapper button.emoji-reaction-button.show-count:after {
 	content: attr(data-count);
 	display: inline-block;
