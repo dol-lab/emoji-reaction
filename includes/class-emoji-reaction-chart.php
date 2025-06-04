@@ -282,25 +282,46 @@ class Emoji_Reaction_Chart {
 
 		$color_index   = 0;
 		$has_reactions = false;
+		$emoji_data    = array();
 
+		// First, collect all emoji data with counts
 		foreach ( $emojis as $emoji ) {
 			$emoji_unicode = $emoji[0];
 			$emoji_name    = $emoji[1];
 
-			// Only show emojis that have votes
+			// Only collect emojis that have votes
 			if ( ! empty( $reactions ) && isset( $reactions[ $emoji_unicode ] ) ) {
 				$count = count( $reactions[ $emoji_unicode ] );
 				if ( $count > 0 ) {
-					$labels[] = $emoji_unicode . ' ' . ucfirst( $emoji_name );
-					$data[]   = $count;
-
-					$color               = $colors[ $color_index % count( $colors ) ];
-					$background_colors[] = $color['bg'];
-					$border_colors[]     = $color['border'];
-
-					++$color_index;
+					$emoji_data[]  = array(
+						'unicode' => $emoji_unicode,
+						'name'    => $emoji_name,
+						'count'   => $count,
+					);
 					$has_reactions = true;
 				}
+			}
+		}
+
+		// Sort emoji data by count in descending order (highest first)
+		if ( $has_reactions ) {
+			usort(
+				$emoji_data,
+				function ( $a, $b ) {
+					return $b['count'] - $a['count'];
+				}
+			);
+
+			// Now build the chart arrays in sorted order
+			foreach ( $emoji_data as $emoji_item ) {
+				$labels[] = $emoji_item['unicode'] . ' ' . ucfirst( $emoji_item['name'] );
+				$data[]   = $emoji_item['count'];
+
+				$color               = $colors[ $color_index % count( $colors ) ];
+				$background_colors[] = $color['bg'];
+				$border_colors[]     = $color['border'];
+
+				++$color_index;
 			}
 		}
 
