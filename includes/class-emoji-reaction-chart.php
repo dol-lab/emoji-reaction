@@ -180,7 +180,7 @@ class Emoji_Reaction_Chart {
 		$html = "
 			<div
 				class='emoji-reaction-chart-container'
-				style='min-height: 30vh; max-height: 30vh;'
+				style='height: 250px;'
 				data-chart-id='{$e('esc_attr', $chart_id)}'
 				data-post-id='{$e('intval', $post_id)}'
 				data-type='{$e('esc_js', $type)}'
@@ -194,7 +194,7 @@ class Emoji_Reaction_Chart {
 					<i class='fa fa-refresh' aria-hidden='true'></i>
 					</button>
 				</div>
-				<canvas id='{$e('esc_attr', $chart_id)}' width='400' height='200' style='min-height: 200px;'></canvas>
+				<canvas id='{$e('esc_attr', $chart_id)}'></canvas>
 					<div class='emoji-reaction-chart-loading'>
 				$loading_text
 				</div>
