@@ -311,22 +311,24 @@ window.emojiReactionChart = (function () {
 		window.addEventListener('emojiReactionChanged', function (event) {
 			// Refresh all charts for the affected post using window events
 			const postId = event.detail.postId;
-			Object.keys(chartInstances).forEach(function (chartId) {
-				if (chartId.includes('chart-' + postId + '-')) {
-					const canvas = document.getElementById(chartId);
-					if (canvas) {
-						const container = canvas.closest('.emoji-reaction-chart-container');
-						const chartType = container ? container.dataset.type || 'bar' : 'bar';
 
-						// Trigger refresh via window event instead of button click
-						window.dispatchEvent(new CustomEvent('emojiChartRefreshRequested', {
-							detail: {
-								chartId: chartId,
-								postId: postId,
-								type: chartType
-							}
-						}));
-					}
+			// Find all chart containers for this post (whether they have chart instances or not)
+			const allChartContainers = document.querySelectorAll('.emoji-reaction-chart-container[data-post-id="' + postId + '"]');
+
+			allChartContainers.forEach(function (container) {
+				const chartId = container.dataset.chartId;
+				const chartType = container.dataset.type || 'bar';
+
+				if (chartId) {
+					// Trigger refresh via window event
+					window.dispatchEvent(new CustomEvent('emojiChartRefreshRequested', {
+						detail: {
+							chartId: chartId,
+							postId: postId,
+							type: chartType,
+							container: container
+						}
+					}));
 				}
 			});
 		});
@@ -341,41 +343,42 @@ window.emojiReactionChart = (function () {
 		window.addEventListener('emojiChartUpdated', function (event) {
 			const { chartId: updatedChartId, postId, data } = event.detail;
 
-			// Update all other charts with the same post ID
-			Object.keys(chartInstances).forEach(function (chartId) {
-				if (chartId !== updatedChartId && chartId.includes('chart-' + postId + '-')) {
-					const canvas = document.getElementById(chartId);
-					if (!canvas) return;
+			// Find all chart containers for this post and update them
+			const allChartContainers = document.querySelectorAll('.emoji-reaction-chart-container[data-post-id="' + postId + '"]');
 
-					if (data.no_reactions === true) {
-						// Destroy existing chart if any
-						if (chartInstances[chartId]) {
-							chartInstances[chartId].destroy();
-							delete chartInstances[chartId];
-						}
-						displayNoReactionsMessage(canvas, data.message || 'No reactions yet');
+			allChartContainers.forEach(function (container) {
+				const chartId = container.dataset.chartId;
+
+				// Skip the chart that was just updated
+				if (chartId === updatedChartId) return;
+
+				const canvas = document.getElementById(chartId);
+				if (!canvas) return;
+
+				if (data.no_reactions === true) {
+					// Destroy existing chart if any
+					if (chartInstances[chartId]) {
+						chartInstances[chartId].destroy();
+						delete chartInstances[chartId];
+					}
+					displayNoReactionsMessage(canvas, data.message || 'No reactions yet');
+				} else {
+					// Remove no reactions message if it exists
+					const existingMessage = container.querySelector('.emoji-reaction-no-reactions');
+					if (existingMessage) {
+						existingMessage.remove();
+					}
+
+					// Show canvas and update/create chart
+					canvas.style.display = 'block';
+
+					if (chartInstances[chartId]) {
+						chartInstances[chartId].data = data;
+						chartInstances[chartId].update();
 					} else {
-						// Remove no reactions message if it exists
-						const container = canvas.closest('.emoji-reaction-chart-container');
-						if (container) {
-							const existingMessage = container.querySelector('.emoji-reaction-no-reactions');
-							if (existingMessage) {
-								existingMessage.remove();
-							}
-						}
-
-						// Show canvas and update/create chart
-						canvas.style.display = 'block';
-
-						if (chartInstances[chartId]) {
-							chartInstances[chartId].data = data;
-							chartInstances[chartId].update();
-						} else {
-							// Determine chart type from container or default to bar
-							const container = canvas.closest('.emoji-reaction-chart-container');
-							const chartType = container ? container.dataset.type || 'donut' : 'bar';
-							createChart(canvas, data, chartType);
-						}
+						// Determine chart type from container
+						const chartType = container.dataset.type || 'bar';
+						createChart(canvas, data, chartType);
 					}
 				}
 			});
