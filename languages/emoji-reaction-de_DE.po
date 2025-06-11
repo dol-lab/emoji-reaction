@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Emoji Reaction\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 10:46+0000\n"
-"PO-Revision-Date: 2025-06-04 17:44+0000\n"
+"PO-Revision-Date: 2025-06-11 15:25+0000\n"
 "Last-Translator: Till J\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -22,17 +22,11 @@ msgstr ""
 "Fügt Emoji-Reaktionen zu Beiträgen und Kommentaren von eingeloggten Nutzern "
 "hinzu."
 
-#. %s: number of additional users who reacted
-#: public/class-emoji-reaction-public.php:178
-#, php-format
-msgid "And %s more ..."
-msgstr "Und %s weitere ..."
-
-#: public/class-emoji-reaction-public.php:487
+#: public/class-emoji-reaction-public.php:577
 msgid "Anonymous"
 msgstr "Anonymus"
 
-#: includes/class-emoji-reaction.php:243
+#: includes/class-emoji-reaction.php:245
 msgid "apple"
 msgstr "Apfel"
 
@@ -46,16 +40,21 @@ msgstr "Digital Open Learning Lab"
 msgid "Emoji Reaction"
 msgstr "Emoji-Reaktion"
 
-#: includes/class-emoji-reaction.php:240
+#: public/class-emoji-reaction-public.php:252
+#, fuzzy
+msgid "Emoji reactions"
+msgstr "Emoji Reaktionen"
+
+#: includes/class-emoji-reaction.php:242
 msgid "fire"
 msgstr "Feuer"
 
-#: includes/class-emoji-reaction.php:248
+#: includes/class-emoji-reaction.php:250
 #, fuzzy
 msgid "grapes"
 msgstr "Trauben"
 
-#: includes/class-emoji-reaction.php:239
+#: includes/class-emoji-reaction.php:241
 msgid "heart"
 msgstr "Herz"
 
@@ -74,30 +73,30 @@ msgstr "https://spaces.kisd.de"
 msgid "Invalid request."
 msgstr "Ungültige Anfrage."
 
-#: includes/class-emoji-reaction.php:241
+#: includes/class-emoji-reaction.php:243
 msgid "laugh"
 msgstr "Lachen"
 
-#: includes/class-emoji-reaction-chart.php:176
+#: includes/class-emoji-reaction-chart.php:180
 #, fuzzy
 msgid "Loading chart..."
 msgstr "Tabelle laden..."
 
-#: includes/class-emoji-reaction-chart.php:172
+#: includes/class-emoji-reaction-chart.php:176
 #, fuzzy
 msgid "No post ID available for chart."
 msgstr "Keine Post-ID für die Karte verfügbar."
 
-#: includes/class-emoji-reaction-chart.php:313
+#: includes/class-emoji-reaction-chart.php:338
 #, fuzzy
 msgid "No reactions yet"
 msgstr "Noch keine Reaktionen"
 
-#: includes/class-emoji-reaction.php:246
+#: includes/class-emoji-reaction.php:248
 msgid "orange"
 msgstr "Orange"
 
-#: includes/class-emoji-reaction.php:244
+#: includes/class-emoji-reaction.php:246
 msgid "pear"
 msgstr "birne"
 
@@ -106,12 +105,12 @@ msgstr "birne"
 msgid "Post not found."
 msgstr "Beitrag nicht gefunden."
 
-#: includes/class-emoji-reaction-chart.php:321
+#: includes/class-emoji-reaction-chart.php:346
 #, fuzzy
 msgid "Reactions"
 msgstr "Reaktionen"
 
-#: includes/class-emoji-reaction-chart.php:177
+#: includes/class-emoji-reaction-chart.php:181
 #, fuzzy
 msgid "Refresh chart"
 msgstr "Tabelle aktualisieren"
@@ -121,27 +120,27 @@ msgstr "Tabelle aktualisieren"
 msgid "Security check failed."
 msgstr "Sicherheitsprüfung fehlgeschlagen."
 
-#: includes/class-emoji-reaction.php:245
+#: includes/class-emoji-reaction.php:247
 msgid "strawberry"
 msgstr "Erdbeere"
 
-#: includes/class-emoji-reaction.php:242
+#: includes/class-emoji-reaction.php:244
 msgid "surprised"
 msgstr "Überrascht"
 
-#: includes/class-emoji-reaction.php:238
+#: includes/class-emoji-reaction.php:240
 msgid "thumbs down"
 msgstr "Daumen runter"
 
-#: includes/class-emoji-reaction.php:237
+#: includes/class-emoji-reaction.php:239
 msgid "thumbs up"
 msgstr "Daumen hoch"
 
-#: includes/class-emoji-reaction.php:247
+#: includes/class-emoji-reaction.php:249
 msgid "watermelon"
 msgstr "Wassermelone"
 
-#: public/class-emoji-reaction-public.php:107
+#: public/class-emoji-reaction-public.php:112
 #| msgid ""
 #| "We love constructive feedback. Think about writing a comment, what can be "
 #| "improved instead. Pro strats: start with something positive :) Still want "
@@ -160,3 +159,22 @@ msgstr ""
 #, fuzzy
 msgid "You do not have permission to edit this post."
 msgstr "Du hast nicht die Erlaubnis, diesen Beitrag zu bearbeiten."
+
+#. %s: emoji that was removed
+#: public/class-emoji-reaction-public.php:369
+#, fuzzy, php-format
+msgid ""
+"Your oldest reaction (%s) was automatically removed to stay within the limit."
+msgstr ""
+"Deine älteste Reaktion (%s) wurde automatisch entfernt, um das Limit nicht "
+"zu überschreiten."
+
+#: public/class-emoji-reaction-public.php:328
+#, fuzzy
+msgid "Your reaction could not be removed."
+msgstr "Deine Reaktion konnte nicht entfernt werden."
+
+#: public/class-emoji-reaction-public.php:332
+#, fuzzy
+msgid "Your reaction could not be saved."
+msgstr "Deine Reaktion konnte nicht gespeichert werden."

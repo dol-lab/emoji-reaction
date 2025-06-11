@@ -3,7 +3,6 @@
 /**
  * Fired during plugin deactivation
  *
- * @since      0.0.1
  *
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/includes
@@ -14,19 +13,17 @@
  *
  * This class defines all code necessary to run during the plugin's deactivation.
  *
- * @since      0.0.1
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/includes
  */
 class Emoji_Reaction_Deactivator {
 
 	/**
-	 * Short Description. (use period)
+	 * Plugin deactivation handler.
 	 *
-	 * Long Description.
+	 * Currently no deactivation tasks are required for this plugin.
 	 *
-	 * @since    0.0.1
 	 */
-	public static function deactivate() {
+	public static function deactivate(): void {
 	}
 }

@@ -19,8 +19,6 @@
  * For more information, see the following discussion:
  * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
  *
- * @link       Author uri
- * @since      0.0.1
  *
  * @package    Emoji_Reaction
  */

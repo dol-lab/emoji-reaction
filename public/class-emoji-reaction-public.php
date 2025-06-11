@@ -3,8 +3,6 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       Author uri
- * @since      0.0.1
  *
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/public
@@ -18,60 +16,51 @@
  *
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/public
- * @author     Author name <Author mail>
  */
 class Emoji_Reaction_Public {
 
 	/**
 	 * The ID of this plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   private
 	 * @var      string    $plugin_name    The ID of this plugin.
 	 */
-	private $plugin_name;
+	private string $plugin_name;
 
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   private
 	 * @var      string    $version    The current version of this plugin.
 	 */
-	private $version;
+	private string $version;
 
 	/**
 	 * The meta key to save the likes in post meta.
 	 *
-	 * @since    0.0.2
 	 * @access   private
 	 * @var      string    $meta_key    The meta key.
 	 */
-	private $meta_key;
+	private string $meta_key;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    0.0.1
-	 * @param      string $plugin_name       The name of the plugin.
-	 * @param      string $version    The version of this plugin.
+	 * @param    string $plugin_name The name of the plugin.
+	 * @param    string $version     The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
-
+	public function __construct( string $plugin_name, string $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
-
-		$this->meta_key = '_' . $plugin_name . '_likes';
+		$this->meta_key    = '_' . $plugin_name . '_likes';
 	}
 
-		/**
-		 * Register the stylesheets for the public-facing side of the site.
-		 *
-		 * @since    0.0.1
-		 */
-	public function enqueue_styles() {
+	/**
+	 * Register the stylesheets for the public-facing side of the site.
+	 *
+	 */
+	public function enqueue_styles(): void {
 		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', '2.9.4' );
-		wp_enqueue_style( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.css', '2.9.4' );
 		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', '2.9.4' );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 		wp_enqueue_style( $this->plugin_name . '-chart', plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-chart.css', array(), $this->version, 'all' );
@@ -80,24 +69,29 @@ class Emoji_Reaction_Public {
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
 	 *
-	 * @since    0.0.1
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts(): void {
 
 		wp_enqueue_script( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.js', array( 'jquery' ), '2.9.4', false );
-		wp_enqueue_script( 'fomantic-ui-dropdown', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-dropdown/dropdown.min.js', array( 'jquery' ), '2.9.4', false );
 		wp_enqueue_script( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.js', array( 'jquery' ), '2.9.4', false );
 
-		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-dropdown' ), $this->version, false );
+		// Use filemtime for versioning in development & local environments
+		$js_file_path       = plugin_dir_path( __FILE__ ) . 'js/emoji-reaction-public.js';
+		$is_dev_environment = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ||
+						'development' === wp_get_environment_type() ||
+						'local' === wp_get_environment_type();
+		$js_version         = $is_dev_environment ? filemtime( $js_file_path ) : $this->version;
+
+		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-popup' ), $js_version, false );
 
 		// Enqueue Chart.js from CDN
 		wp_enqueue_script( 'chart-js', plugin_dir_url( __FILE__ ) . 'lib/chart.umd.min.js', array(), '4.4.1', true );
 
 		// Enqueue chart functionality
-		wp_enqueue_script( $this->plugin_name . '-chart-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart.js', array( 'chart-js' ), $this->version, true );
+		wp_enqueue_script( $this->plugin_name . '-chart-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart.js', array( 'chart-js' ), $js_version, true );
 
 		// Enqueue chart messages handling
-		wp_enqueue_script( $this->plugin_name . '-chart-messages', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart-messages.js', array(), $this->version, true );
+		wp_enqueue_script( $this->plugin_name . '-chart-messages', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart-messages.js', array(), $js_version, true );
 
 		wp_localize_script(
 			$this->plugin_name . '-public-js',
@@ -111,23 +105,12 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
-	 * Displays emoji buttons.
+	 * Get default arguments for emoji reaction operations.
 	 *
-	 * The callback function added as a filter, which can be applied in the theme to display the emoji buttons.
-	 *
-	 * @since 0.0.1
-	 *
-	 * @param   array $args {
-	 *   Required. An array of elements, that identify the object to get liked or null.
-	 *
-	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
-	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
-	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
-	 *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_default_emojis().
-	 * }
+	 * @return array Default arguments array.
 	 */
-	public function display_buttons( $args ) {
-		$defaults            = array(
+	private function get_default_args(): array {
+		return array(
 			'type'            => 'post',
 			'ID'              => get_the_ID(),
 			'align'           => 'left',
@@ -137,83 +120,128 @@ class Emoji_Reaction_Public {
 			'current_user_id' => get_current_user_id(),
 			'nonce'           => wp_create_nonce( '_emoji_reaction_action' ),
 		);
-		$args                = wp_parse_args( $args, $defaults );
-		$args['likes']       = $this->get_reactions( $args['ID'], $args['type'] );
-		$args['total_count'] = $this->get_reaction_count( $args['likes'] );
-		$this->render_display( (object) $args );
 	}
 
 	/**
-	 * Renders the emoji reaction display using prepared data.
+	 * Displays emoji buttons.
 	 *
-	 * @since 0.0.1
+	 * The callback function added as a filter, which can be applied in the theme to display the emoji buttons.
 	 *
-	 * @param object $obj Display data containing all necessary variables.
+	 * @param array $args {
+	 *   Required. An array of elements, that identify the object to get liked or null.
+	 *
+	 *     @type int 'ID' The post or comment ID. Default is the value of 'get_the_ID' function.
+	 *     @type string 'type' The type of object. Accepts 'post' or 'comment'. Default 'post'.
+	 *     @type string 'align' Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
+	 *     @type array 'emojis' List of emojis. Default is return of Emoji_Reaction::get_default_emojis().
+	 * }
 	 */
-	private function render_display( $obj ) {
-		// Build emoji reaction buttons
-		$emoji_buttons = '';
-		foreach ( $obj->emojis as $emoji ) {
-			$user_ids        = array();
-			$user_ids_max    = array();
-			$count           = 0;
-			$classname_voted = 'not-voted';
+	public function display_buttons( array $args ): void {
+		$defaults = $this->get_default_args();
+		$args     = wp_parse_args( $args, $defaults );
 
-			if ( ! empty( $obj->likes ) && array_key_exists( $emoji[0], $obj->likes ) ) {
-				$user_ids        = $this->uid_to_first_position( $obj->likes[ $emoji[0] ], $obj->current_user_id );
-				$count           = count( $user_ids );
-				$classname_voted = in_array( $obj->current_user_id, $user_ids ) ? ' voted' : ' not-voted';
-				$user_ids_max    = array_slice( $user_ids, 0, $obj->max_usernames );
+		// Get the complete state data
+		$state_data = $this->get_state_data( $args['ID'], $args['type'], $args );
+
+		// Render simplified container with state data
+		$this->render_simple_display( $state_data );
+	}
+
+	/**
+	 * Get complete state data for an object (post/comment).
+	 *
+	 *
+	 * @param   int    $object_id      Post or comment id.
+	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
+	 * @param   array  $args           Additional arguments.
+	 *
+	 * @return  array  Complete state data.
+	 */
+	private function get_state_data( $object_id, $object_type, $args ) {
+		$likes           = $this->get_reactions( $object_id, $object_type );
+		$emojis          = $args['emojis'];
+		$current_user_id = $args['current_user_id'];
+		$max_usernames   = $args['max_usernames'];
+
+		// Process each emoji
+		$emoji_data = array();
+		foreach ( $emojis as $emoji ) {
+			$count      = 0;
+			$user_ids   = array();
+			$user_voted = false;
+
+			if ( ! empty( $likes ) && array_key_exists( $emoji[0], $likes ) ) {
+				$user_ids   = array_values( $likes[ $emoji[0] ] );
+				$count      = count( $user_ids );
+				$user_voted = in_array( $current_user_id, $user_ids );
 			}
 
-			// Build user list for popup
-			$user_list = '';
-			foreach ( $user_ids_max as $user_id ) {
-				$user_list .= '<li data-user-id="' . esc_attr( $user_id ) . '">' . esc_html( $this->get_user_name( $user_id ) ) . '</li>';
+			// Get user names (limited)
+			$user_names       = array();
+			$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
+			foreach ( $user_ids_limited as $user_id ) {
+				$user_names[] = array(
+					'id'   => $user_id,
+					'name' => $this->get_user_name( $user_id ),
+				);
 			}
 
-			$more_users = '';
-			if ( $count > $obj->max_usernames ) {
-				/* translators: %s: number of additional users who reacted */
-				$more_users = '<p>' . esc_html( sprintf( __( 'And %s more ...', 'emoji-reaction' ), ( $count - $obj->max_usernames ) ) ) . '</p>';
-			}
-
-			$emoji_buttons .= '
-				<button class="emoji-reaction-button emoji-reaction-button-popup show-count ' . esc_attr( $classname_voted ) . '" data-emoji="' . esc_attr( $emoji[0] ) . '" data-count="' . esc_attr( $count ) . '" name="' . esc_attr( $emoji[1] ) . '"></button>
-				<div class="ui popup emoji-reaction-popup-container">
-					<ul class="emoji-reaction-usernames">' . $user_list . '</ul>' . $more_users . '
-				</div>
-			';
+			$emoji_data[] = array(
+				'emoji'       => $emoji[0],
+				'name'        => $emoji[1],
+				'count'       => $count,
+				'user_voted'  => $user_voted,
+				'user_names'  => $user_names,
+				'total_users' => count( $user_ids ),
+			);
 		}
 
-		// Build dropdown menu items
-		$dropdown_items = '';
-		foreach ( $obj->emojis as $emoji ) {
-			$classname_voted = 'not-voted';
-			if ( ! empty( $obj->likes ) && array_key_exists( $emoji[0], $obj->likes ) ) {
-				$classname_voted = in_array( $obj->current_user_id, $obj->likes[ $emoji[0] ] ) ? ' voted' : ' not-voted';
+		// Sort emojis: user voted first, then by count (descending), then by original order
+		usort(
+			$emoji_data,
+			function ( $a, $b ) {
+				if ( $a['user_voted'] && ! $b['user_voted'] ) {
+					return -1;
+				} elseif ( ! $a['user_voted'] && $b['user_voted'] ) {
+					return 1;
+				} else {
+					return $b['count'] - $a['count'];
+				}
 			}
-			$dropdown_items .= '
-				<button class="item emoji-reaction-button ' . esc_attr( $classname_voted ) . '" data-emoji="' . esc_attr( $emoji[0] ) . '" name="' . esc_attr( $emoji[1] ) . '"></button>';
-		}
+		);
 
-		$render = '
-			<div class="emoji-reaction-wrapper ' . esc_attr( $obj->align ) . '" data-object-id="' . esc_attr( $obj->ID ) . '" data-object-type="' . esc_attr( $obj->type ) . '" data-nonce="' . esc_attr( $obj->nonce ) . '" data-totalcount="' . esc_attr( $obj->total_count ) . '">
-				<div class="emoji-reactions-container">
-				' . $emoji_buttons . '
-				</div>
-				<div class="emoji-reaction-button-addnew-container ">
-					<div class="emoji-reaction-button-addnew ui icon top pointing dropdown center">
-						<i class="icon-thumpup-plus"></i>
-						<div class="menu">
-							<div class="item-container">' . $dropdown_items . '</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		';
+		return array(
+			'object_id'       => $object_id,
+			'object_type'     => $object_type,
+			'nonce'           => $args['nonce'],
+			'align'           => $args['align'],
+			'max_usernames'   => $max_usernames,
+			'total_count'     => $this->get_reaction_count( $likes ),
+			'emojis'          => $emoji_data,
+			'current_user_id' => $current_user_id,
+		);
+	}
 
-		echo $render; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	/**
+	 * Render simple display container with inline state data.
+	 *
+	 *
+	 * @param array $state_data Complete state data.
+	 */
+	private function render_simple_display( $state_data ) {
+		$container_id = 'emoji-reaction-' . $state_data['object_type'] . '-' . $state_data['object_id'];
+
+		// Add semantic wrapper with proper ARIA attributes
+		echo '<section class="emoji-reaction-wrapper ' . esc_attr( $state_data['align'] ) . '" id="' . esc_attr( $container_id ) . '" role="group" aria-label="' . esc_attr( __( 'Emoji reactions', 'emoji-reaction' ) ) . '" aria-live="polite"></section>';
+
+		// Output inline script with state data
+		echo '<script type="text/javascript">';
+		echo 'window.emojiReactionData = window.emojiReactionData || {};';
+		echo 'window.emojiReactionData[' . wp_json_encode( $container_id ) . '] = ' . wp_json_encode( $state_data ) . ';';
+		echo 'if (window.EmojiReaction && window.EmojiReaction.initContainer) {';
+		echo '  window.EmojiReaction.initContainer(' . wp_json_encode( $container_id ) . ');';
+		echo '}';
+		echo '</script>';
 	}
 
 	/**
@@ -221,7 +249,6 @@ class Emoji_Reaction_Public {
 	 *
 	 * It updates, save or delete user IDs in the post or comment meta.
 	 *
-	 * @since 0.0.1
 	 *
 	 * @return  string  echo status for the ajax call.
 	 */
@@ -279,31 +306,62 @@ class Emoji_Reaction_Public {
 		$state = $unlike === 'true' ? 'unliked' : 'liked';
 
 		if ( 'unliked' === $state ) {
-			$success = $this->delete_reaction( $object_id, $object_type, $emoji, $user_id );
-
+			$success          = $this->delete_reaction( $object_id, $object_type, $emoji, $user_id );
+			$error_message    = __( 'Your reaction could not be removed.', 'emoji-reaction' );
+			$removed_reaction = null;
 		} else {
-			$success = $this->save_reaction( $object_id, $object_type, $emoji, $user_id );
+			$success          = $this->save_reaction( $object_id, $object_type, $emoji, $user_id );
+			$error_message    = __( 'Your reaction could not be saved.', 'emoji-reaction' );
+			$removed_reaction = null;
+
+			// Check if save_reaction returned info about a removed reaction
+			if ( is_array( $success ) && isset( $success['removed_reaction'] ) ) {
+				$removed_reaction = $success['removed_reaction'];
+				$success          = true;
+			}
 		}
 
 		if ( $success ) {
-			wp_send_json_success(
-				array(
+			// Get default arguments to build state data
+			$default_args                    = $this->get_default_args();
+			$default_args['current_user_id'] = $user_id;
+
+			// Get complete updated state
+			$state_data = $this->get_state_data( $object_id, $object_type, $default_args );
+
+			// Add legacy response data for backward compatibility
+			$response_data = array(
+				'success'     => true,
+				'state_data'  => $state_data,
+				'action_info' => array(
 					'state'       => $state,
 					'user_id'     => $user_id,
 					'user_name'   => $this->get_user_name( $user_id ),
-					'post_id'     => $object_id,
+					'object_id'   => $object_id,
 					'object_type' => $object_type,
-				)
+					'emoji'       => $emoji,
+				),
 			);
+
+			// Add information about removed reaction if one was automatically removed
+			if ( $removed_reaction ) {
+				$response_data['action_info']['removed_reaction'] = $removed_reaction;
+				/* translators: %s: emoji that was removed */
+				$response_data['action_info']['limit_message'] = sprintf(
+					__( 'Your oldest reaction (%s) was automatically removed to stay within the limit.', 'emoji-reaction' ),
+					$removed_reaction['emoji']
+				);
+			}
+
+			wp_send_json_success( $response_data );
 		} else {
-			wp_send_json_error( array( 'message' => 'Your like could not be saved.' ) );
+			wp_send_json_error( array( 'message' => $error_message ) );
 		}
 	}
 
 	/**
 	 * Check if user can react to the specified object.
 	 *
-	 * @since 0.3.5
 	 *
 	 * @param   int    $object_id      Post or comment id.
 	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
@@ -345,7 +403,6 @@ class Emoji_Reaction_Public {
 	/**
 	 * Get user IDs associated to an emoji out of post or comment meta.
 	 *
-	 * @since 0.0.2
 	 *
 	 * @param   int    $object_id      Post or comment id.
 	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
@@ -374,44 +431,55 @@ class Emoji_Reaction_Public {
 	/**
 	 * Saves user ID associated to emoji in post or comment meta.
 	 *
-	 * @since 0.0.2
 	 *
 	 * @param   int    $object_id      Post or comment id.
 	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
 	 * @param   string $emoji          Emoji the user clicked on.
 	 * @param   int    $user_id        User ID to save.
 	 *
-	 * @return  bool   True on success, false on failure (or if the value passed is the same as in db)
+	 * @return  bool|array   True on success, false on failure, array with removed reaction info if oldest was removed
 	 */
 	private function save_reaction( int $object_id, $object_type, $emoji, $user_id ) {
-		$likes = $this->get_reactions( $object_id, $object_type );
-		$time  = intval( time() );
+		$likes            = $this->get_reactions( $object_id, $object_type );
+		$time             = intval( time() );
+		$removed_reaction = null;
 
 		if ( $emoji === '' ) {
 			return false;
 		}
 
-		if ( ! empty( $likes ) ) {
-			if ( array_key_exists( $emoji, $likes ) ) {
-				if ( in_array( $user_id, $likes[ $emoji ] ) ) {
-					return false;
-				}
+		// Check if user already reacted to this emoji
+		if ( ! empty( $likes ) && array_key_exists( $emoji, $likes ) && in_array( $user_id, $likes[ $emoji ] ) ) {
+			return false;
+		}
+
+		// Check reaction limit per user and remove oldest if needed
+		$max_reactions_per_user = apply_filters( 'emoji_reaction_max_reactions_per_user', 1 );
+		if ( $max_reactions_per_user > 0 ) {
+			$user_reaction_count = $this->get_user_reaction_count( $likes, $user_id );
+			if ( $user_reaction_count >= $max_reactions_per_user ) {
+				$removed_reaction = $this->remove_oldest_user_reaction( $likes, $user_id );
 			}
+		}
+
+		if ( ! empty( $likes ) ) {
 			$likes[ $emoji ][ $time ] = $user_id;
 		} else {
 			$likes = array( $emoji => array( $time => $user_id ) );
 		}
 
 		$update = update_metadata( $object_type, $object_id, $this->meta_key, $likes );
-		// $new_data = get_metadata( $object_type, $object_id, $this->meta_key );
 
-		return is_int( $update ) ? true : $update;
+		if ( is_int( $update ) ? true : $update ) {
+			return $removed_reaction ? array( 'removed_reaction' => $removed_reaction ) : true;
+		}
+
+		return false;
 	}
 
 	/**
 	 * Deletes user ID associated to emoji in post or comment meta.
 	 *
-	 * @since 0.0.3
 	 *
 	 * @param   int    $object_id      Post or comment id.
 	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
@@ -453,7 +521,6 @@ class Emoji_Reaction_Public {
 	/**
 	 * Get total number of likes of a post / comment.
 	 *
-	 * @since 0.1.1
 	 *
 	 * @param   array $likes      All likes of a post / comment.
 	 *
@@ -476,7 +543,6 @@ class Emoji_Reaction_Public {
 	/**
 	 * Get user name by user id
 	 *
-	 * @since 0.0.6
 	 *
 	 * @param   int $user_id        User id.
 	 *
@@ -492,11 +558,83 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
+	 * Get the number of reactions a user has made to a specific post/comment.
+	 *
+	 *
+	 * @param   array $likes      All likes of a post / comment.
+	 * @param   int   $user_id    User ID to count reactions for.
+	 *
+	 * @return  int         Number of reactions by this user.
+	 */
+	private function get_user_reaction_count( $likes, $user_id ) {
+		$count = 0;
+
+		if ( ! empty( $likes ) ) {
+			foreach ( $likes as $emoji => $emoji_likes ) {
+				if ( $emoji !== '' && in_array( $user_id, $emoji_likes ) ) {
+					++$count;
+				}
+			}
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Remove the oldest reaction by a user and return information about it.
+	 *
+	 *
+	 * @param   array $likes      All likes of a post / comment (passed by reference).
+	 * @param   int   $user_id    User ID whose oldest reaction to remove.
+	 *
+	 * @return  array|null        Information about the removed reaction or null if none found.
+	 */
+	private function remove_oldest_user_reaction( &$likes, $user_id ) {
+		$oldest_timestamp     = null;
+		$oldest_emoji         = null;
+		$oldest_timestamp_key = null;
+
+		// Find the oldest reaction by this user
+		if ( ! empty( $likes ) ) {
+			foreach ( $likes as $emoji => $emoji_likes ) {
+				if ( $emoji !== '' ) {
+					foreach ( $emoji_likes as $timestamp => $uid ) {
+						if ( $uid === $user_id ) {
+							if ( $oldest_timestamp === null || $timestamp < $oldest_timestamp ) {
+									$oldest_timestamp     = $timestamp;
+									$oldest_emoji         = $emoji;
+									$oldest_timestamp_key = $timestamp;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Remove the oldest reaction if found
+		if ( $oldest_emoji && $oldest_timestamp_key ) {
+			unset( $likes[ $oldest_emoji ][ $oldest_timestamp_key ] );
+
+			// Clean up empty arrays
+			if ( empty( $likes[ $oldest_emoji ] ) ) {
+				unset( $likes[ $oldest_emoji ] );
+			}
+
+			return array(
+				'emoji'     => $oldest_emoji,
+				'timestamp' => $oldest_timestamp,
+			);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Move an user id to first position of array.
 	 *
-	 * @since 0.2.0
 	 *
-	 * @param   int $user_id        User id.
+	 * @param   array $user_ids    User ids array.
+	 * @param   int   $user_id     User id.
 	 *
 	 * @return  int[]      User ids.
 	 */

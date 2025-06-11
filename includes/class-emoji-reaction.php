@@ -1,12 +1,10 @@
 <?php
-
 /**
  * The file that defines the core plugin class
  *
  * A class definition that includes attributes and functions used across both the
  * public-facing side of the site and the admin area.
  *
- * @since      0.0.1
  *
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/includes
@@ -21,10 +19,8 @@
  * Also maintains the unique identifier of this plugin as well as the current
  * version of the plugin.
  *
- * @since      0.0.1
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/includes
- * @author     Author name <Author mail>
  */
 class Emoji_Reaction {
 
@@ -32,29 +28,26 @@ class Emoji_Reaction {
 	 * The loader that's responsible for maintaining and registering all hooks that power
 	 * the plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   protected
 	 * @var      Emoji_Reaction_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
-	protected $loader;
+	protected Emoji_Reaction_Loader $loader;
 
 	/**
 	 * The unique identifier of this plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   protected
 	 * @var      string    $plugin_name    The string used to uniquely identify this plugin.
 	 */
-	protected $plugin_name;
+	protected string $plugin_name;
 
 	/**
 	 * The current version of the plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   protected
 	 * @var      string    $version    The current version of the plugin.
 	 */
-	protected $version;
+	protected string $version;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -63,7 +56,6 @@ class Emoji_Reaction {
 	 * Load the dependencies, define the locale, and set the hooks for the admin area and
 	 * the public-facing side of the site.
 	 *
-	 * @since    0.0.1
 	 */
 	public function __construct() {
 		if ( defined( 'EMOJI_REACTION_VERSION' ) ) {
@@ -92,10 +84,9 @@ class Emoji_Reaction {
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
 	 *
-	 * @since    0.0.1
 	 * @access   private
 	 */
-	private function load_dependencies() {
+	private function load_dependencies(): void {
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
@@ -134,10 +125,9 @@ class Emoji_Reaction {
 	 * Uses the Emoji_Reaction_i18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
-	 * @since    0.0.1
 	 * @access   private
 	 */
-	private function set_locale() {
+	private function set_locale(): void {
 
 		$plugin_i18n = new Emoji_Reaction_i18n();
 
@@ -148,10 +138,9 @@ class Emoji_Reaction {
 	 * Register all of the hooks related to the admin area functionality
 	 * of the plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   private
 	 */
-	private function define_admin_hooks() {
+	private function define_admin_hooks(): void {
 
 		$plugin_admin = new Emoji_Reaction_Admin( $this->get_plugin_name(), $this->get_version() );
 
@@ -163,10 +152,9 @@ class Emoji_Reaction {
 	 * Register all of the hooks related to the public-facing functionality
 	 * of the plugin.
 	 *
-	 * @since    0.0.1
 	 * @access   private
 	 */
-	private function define_public_hooks() {
+	private function define_public_hooks(): void {
 
 		$plugin_public = new Emoji_Reaction_Public( $this->get_plugin_name(), $this->get_version() );
 		$plugin_chart  = new Emoji_Reaction_Chart( $this->get_plugin_name(), $this->get_version() );
@@ -178,6 +166,7 @@ class Emoji_Reaction {
 		 * Ajax actions
 		 */
 		$this->loader->add_action( 'wp_ajax_emoji_reaction_ajax_save_action', $plugin_public, 'emoji_reaction_ajax_save_action' );
+		$this->loader->add_action( 'wp_ajax_nopriv_emoji_reaction_ajax_save_action', $plugin_public, 'emoji_reaction_ajax_save_action' );
 
 		/**
 		 * Custom actions/filters, which can be inserted into a theme
@@ -185,14 +174,14 @@ class Emoji_Reaction {
 		 */
 		$this->loader->add_action( 'emoji_reaction_display_buttons', $plugin_public, 'display_buttons' );
 		$this->loader->add_filter( 'emoji_reaction_emojis', $this, 'get_default_emojis' );
+		$this->loader->add_filter( 'emoji_reaction_max_reactions_per_user', $this, 'get_default_max_reactions_per_user' );
 	}
 
 	/**
 	 * Run the loader to execute all of the hooks with WordPress.
 	 *
-	 * @since    0.0.1
 	 */
-	public function run() {
+	public function run(): void {
 		$this->loader->run();
 	}
 
@@ -200,39 +189,36 @@ class Emoji_Reaction {
 	 * The name of the plugin used to uniquely identify it within the context of
 	 * WordPress and to define internationalization functionality.
 	 *
-	 * @return    string    The name of the plugin.
+	 * @return   string    The name of the plugin.
 	 */
-	public function get_plugin_name() {
+	public function get_plugin_name(): string {
 		return $this->plugin_name;
 	}
 
 	/**
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
-	 * @return    Emoji_Reaction_Loader    Orchestrates the hooks of the plugin.
+	 * @return   Emoji_Reaction_Loader    Orchestrates the hooks of the plugin.
 	 */
-	public function get_loader() {
+	public function get_loader(): Emoji_Reaction_Loader {
 		return $this->loader;
 	}
 
 	/**
 	 * Retrieve the version number of the plugin.
 	 *
-	 * @return    string    The version number of the plugin.
+	 * @return   string    The version number of the plugin.
 	 */
-	public function get_version() {
+	public function get_version(): string {
 		return $this->version;
 	}
 
 	/**
 	 * Provide the list of emojis.
 	 *
-	 * @return    array    Default emojis used in the plugin.
-	 *
-	 * @todo
-	 * - admin page, so this function has to be moved to a default settings function
+	 * @return   array    Default emojis used in the plugin.
 	 */
-	public static function get_default_emojis() {
+	public static function get_default_emojis(): array {
 		return array(
 			array( '👍', __( 'thumbs up', 'emoji-reaction' ) ),
 			array( '👎', __( 'thumbs down', 'emoji-reaction' ) ),
@@ -247,5 +233,14 @@ class Emoji_Reaction {
 			array( '🍉', __( 'watermelon', 'emoji-reaction' ) ),
 			array( '🍇', __( 'grapes', 'emoji-reaction' ) ),
 		);
+	}
+
+	/**
+	 * Provide the default maximum reactions per user.
+	 *
+	 * @return int    Default maximum reactions per user (1 means users can only add one reaction per post/comment).
+	 */
+	public static function get_default_max_reactions_per_user(): int {
+		return 1;
 	}
 }

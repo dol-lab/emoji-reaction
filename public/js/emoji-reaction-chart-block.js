@@ -1,7 +1,5 @@
 /**
  * Gutenberg Block for Emoji Reaction Chart
- *
- * @since 0.4.0
  */
 
 (function() {

@@ -1,7 +1,5 @@
 /**
  * Emoji Reaction Chart functionality
- *
- * @since 0.4.0
  */
 
 window.emojiReactionChart = (function () {

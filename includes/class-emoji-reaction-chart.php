@@ -3,7 +3,6 @@
 /**
  * The chart functionality of the plugin.
  *
- * @since      0.4.0
  *
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/includes
@@ -14,7 +13,6 @@
  *
  * Handles shortcode and Gutenberg block for displaying reaction charts.
  *
- * @since      0.4.0
  * @package    Emoji_Reaction
  * @subpackage Emoji_Reaction/includes
  */
@@ -23,38 +21,34 @@ class Emoji_Reaction_Chart {
 	/**
 	 * The ID of this plugin.
 	 *
-	 * @since    0.4.0
 	 * @access   private
 	 * @var      string    $plugin_name    The ID of this plugin.
 	 */
-	private $plugin_name;
+	private string $plugin_name;
 
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    0.4.0
 	 * @access   private
 	 * @var      string    $version    The current version of this plugin.
 	 */
-	private $version;
+	private string $version;
 
 	/**
 	 * The meta key to get the reactions from post meta.
 	 *
-	 * @since    0.4.0
 	 * @access   private
 	 * @var      string    $meta_key    The meta key.
 	 */
-	private $meta_key;
+	private string $meta_key;
 
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    0.4.0
 	 * @param    string $plugin_name The name of the plugin.
 	 * @param    string $version     The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct( string $plugin_name, string $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 		$this->meta_key    = '_' . $plugin_name . '_likes';
@@ -67,19 +61,15 @@ class Emoji_Reaction_Chart {
 
 	/**
 	 * Register the shortcode.
-	 *
-	 * @since 0.4.0
 	 */
-	public function register_shortcode() {
+	public function register_shortcode(): void {
 		add_shortcode( 'emoji_reaction_chart', array( $this, 'render_shortcode' ) );
 	}
 
 	/**
 	 * Register the Gutenberg block.
-	 *
-	 * @since 0.4.0
 	 */
-	public function register_block() {
+	public function register_block(): void {
 		if ( function_exists( 'register_block_type' ) ) {
 			wp_register_script(
 				'emoji-reaction-chart-block',
@@ -111,12 +101,10 @@ class Emoji_Reaction_Chart {
 	/**
 	 * Render the shortcode.
 	 *
-	 * @since 0.4.0
-	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
 	 */
-	public function render_shortcode( $atts ) {
+	public function render_shortcode( array $atts ): string {
 		$atts = shortcode_atts(
 			array(
 				'type'    => 'donut',
@@ -132,12 +120,10 @@ class Emoji_Reaction_Chart {
 	/**
 	 * Render the Gutenberg block.
 	 *
-	 * @since 0.4.0
-	 *
 	 * @param array $attributes Block attributes.
 	 * @return string HTML output.
 	 */
-	public function render_block( $attributes ) {
+	public function render_block( array $attributes ): string {
 		$attributes = wp_parse_args(
 			$attributes,
 			array(
@@ -151,8 +137,6 @@ class Emoji_Reaction_Chart {
 
 	/**
 	 * Render the chart HTML.
-	 *
-	 * @since 0.4.0
 	 *
 	 * @param array $args Chart arguments.
 	 * @return string HTML output.
@@ -213,8 +197,6 @@ class Emoji_Reaction_Chart {
 
 	/**
 	 * AJAX handler for getting chart data.
-	 *
-	 * @since 0.4.0
 	 */
 	public function get_chart_data_ajax() {
 		$post_id = isset( $_GET['post_id'] ) ? intval( $_GET['post_id'] ) : 0;
@@ -238,7 +220,6 @@ class Emoji_Reaction_Chart {
 	/**
 	 * Get chart data for a post.
 	 *
-	 * @since 0.4.0
 	 *
 	 * @param int $post_id Post ID.
 	 * @return array Chart data.
