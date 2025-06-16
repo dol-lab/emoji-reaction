@@ -34,18 +34,24 @@
 		// Render a container with current state
 		renderContainer: function (containerId) {
 			var data = this.containers[containerId];
-			var $container = $('#' + containerId);
-			if (!$container.length || !data) return;
+			// Use attribute selector to handle potential multiple instances with same ID
+			var $containers = $('[id="' + containerId + '"]');
+			if (!$containers.length || !data) return;
 
-			// Clear container
-			$container.empty();
+			// Process each container instance
+			var self = this;
+			$containers.each(function () {
+				var $container = $(this);
+				// Clear container
+				$container.empty();
 
-			// Build HTML
-			var html = this.buildContainerHTML(data);
-			$container.html(html);
+				// Build HTML
+				var html = self.buildContainerHTML(data);
+				$container.html(html);
 
-			// Initialize UI components
-			this.initializeUIComponents($container);
+				// Initialize UI components
+				self.initializeUIComponents($container);
+			});
 		},
 
 		// Build complete HTML for container
@@ -70,7 +76,8 @@
 				var popupId = 'emoji-addnew-popup-' + data.object_type + '-' + data.object_id;
 				addNewContainer = `
 					<div class="emoji-reaction-button-addnew-container">
-						<button class="emoji-reaction-button-addnew ui icon center"
+						<button
+							class="emoji-reaction-button-addnew ui icon center"
 							type="button"
 							aria-label="Add new reaction"
 							aria-expanded="false"
@@ -78,14 +85,16 @@
 							aria-controls="${popupId}"
 							tabindex="0"
 						>
-						<i class="icon-thumpup-plus"></i>
+							<i class="icon-thumpup-plus"></i>
 						</button>
-						<div class="ui popup addnew-popup"
-						id="${popupId}"
-						role="menu"
-						aria-hidden="true"
-						aria-label="Choose reaction">
-						<div class="item-container" role="group">${dropdownItems}</div>
+						<div
+							class="ui popup addnew-popup"
+							id="${popupId}"
+							role="menu"
+							aria-hidden="true"
+							aria-label="Choose reaction"
+						>
+							<div class="item-container" role="group">${dropdownItems}</div>
 						</div>
 					</div>
 					`;
@@ -98,9 +107,9 @@
 					data-nonce="${data.nonce}"
 					data-totalcount="${data.total_count}"
 				>
-						${mainButtons}
-					</div>
-					${addNewContainer}
+					${mainButtons}
+				</div>
+				${addNewContainer}
 				`;
 		},
 
