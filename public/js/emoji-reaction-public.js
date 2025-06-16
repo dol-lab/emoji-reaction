@@ -179,9 +179,9 @@
 		initializeUIComponents: function ($container) {
 			$container.find('.emoji-reaction-button-popup').popup({
 				inline: true,
-				addTouchEvents: false,
+				addTouchEvents: true, // Enable touch events for mobile
 				variation: 'inverted',
-				position: 'top right',
+				position: 'top center',
 				on: 'manual', // Set to manual so we can control when it shows
 				onShow: function () {
 					$(this).parent().parent().find('.emoji-reaction-button-addnew').popup('hide');
@@ -194,7 +194,8 @@
 				$addNewButton.popup({
 					popup: $container.find('.addnew-popup'),
 					on: 'click',
-					position: 'top left'
+					position: 'top center',
+					addTouchEvents: true // Enable touch events for mobile
 				});
 			}
 
