@@ -181,7 +181,7 @@
 				inline: true,
 				addTouchEvents: true, // Enable touch events for mobile
 				variation: 'inverted',
-				position: 'top center',
+				position: 'top left',
 				on: 'manual', // Set to manual so we can control when it shows
 				onShow: function () {
 					$(this).parent().parent().find('.emoji-reaction-button-addnew').popup('hide');
@@ -194,7 +194,7 @@
 				$addNewButton.popup({
 					popup: $container.find('.addnew-popup'),
 					on: 'click',
-					position: 'top center',
+					position: 'top left',
 					addTouchEvents: true // Enable touch events for mobile
 				});
 			}
