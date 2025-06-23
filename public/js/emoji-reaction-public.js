@@ -91,7 +91,6 @@
 							class="ui popup addnew-popup"
 							id="${popupId}"
 							role="menu"
-							aria-hidden="true"
 							aria-label="Choose reaction"
 						>
 							<div class="item-container" role="group">${dropdownItems}</div>
