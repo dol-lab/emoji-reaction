@@ -256,19 +256,16 @@ class Emoji_Reaction_Public {
 		// Check if user is logged in
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'You must be logged in to react.' ), 401 );
-			return;
 		}
 
 		// Check if required POST data exists
 		if ( ! isset( $_POST['nonce'], $_POST['object_id'], $_POST['object_type'], $_POST['emoji'], $_POST['unlike'] ) ) {
 			wp_send_json_error( array( 'message' => 'Missing required data.' ), 400 );
-			return;
 		}
 
 		// Verify nonce for CSRF protection
 		if ( ! wp_verify_nonce( wp_unslash( $_POST['nonce'] ), '_emoji_reaction_action' ) ) {
 			wp_send_json_error( array( 'message' => 'Security check failed.' ), 401 );
-			return;
 		}
 
 		// Sanitize and validate input data
@@ -281,26 +278,22 @@ class Emoji_Reaction_Public {
 		// Validate object type
 		if ( ! in_array( $object_type, array( 'post', 'comment' ), true ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid object type.' ), 400 );
-			return;
 		}
 
 		// Validate object ID
 		if ( $object_id <= 0 ) {
 			wp_send_json_error( array( 'message' => 'Invalid object ID.' ), 400 );
-			return;
 		}
 
 		// Validate emoji (check if it's in allowed list)
 		$allowed_emojis = array_column( apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() ), 0 );
 		if ( ! in_array( $emoji, $allowed_emojis, true ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid emoji.' ), 400 );
-			return;
 		}
 
 		// Check user permissions for the object
 		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
 			wp_send_json_error( array( 'message' => 'You do not have permission to react to this content.' ), 403 );
-			return;
 		}
 
 		$state = $unlike === 'true' ? 'unliked' : 'liked';
@@ -328,10 +321,10 @@ class Emoji_Reaction_Public {
 
 			// Get complete updated state
 			$state_data = $this->get_state_data( $object_id, $object_type, $default_args );
+			unset( $state_data['nonce'] ); // Remove nonce from state data to avoid exposing it.
 
 			// Add legacy response data for backward compatibility
 			$response_data = array(
-				'success'     => true,
 				'state_data'  => $state_data,
 				'action_info' => array(
 					'state'       => $state,
@@ -348,10 +341,12 @@ class Emoji_Reaction_Public {
 				$response_data['action_info']['removed_reaction'] = $removed_reaction;
 				/* translators: %s: emoji that was removed */
 				$response_data['action_info']['limit_message'] = sprintf(
-					__( 'Your oldest reaction (%s) was automatically removed to stay within the limit.', 'emoji-reaction' ),
+					// translators: %s: emoji that was removed
+					esc_html__( 'Your oldest reaction (%s) was automatically removed to stay within the limit.', 'emoji-reaction' ),
 					$removed_reaction['emoji']
 				);
 			}
+			do_action( 'emoji_reaction_saved', $response_data );
 
 			wp_send_json_success( $response_data );
 		} else {
