@@ -320,10 +320,7 @@ class Emoji_Reaction_Public {
 			$default_args['current_user_id'] = $user_id;
 
 			// Get complete updated state
-			$state_data = $this->get_state_data( $object_id, $object_type, $default_args );
-			unset( $state_data['nonce'] ); // Remove nonce from state data to avoid exposing it.
-
-			// Add legacy response data for backward compatibility
+			$state_data    = $this->get_state_data( $object_id, $object_type, $default_args );
 			$response_data = array(
 				'state_data'  => $state_data,
 				'action_info' => array(
