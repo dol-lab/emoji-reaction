@@ -361,7 +361,7 @@
 							} else {
 								message = 'Removed ' + actionInfo.emoji + ' reaction';
 							}
-							self.announceToScreenReader(message);
+							//self.announceToScreenReader(message);
 						}
 
 						// Handle notifications
@@ -375,7 +375,7 @@
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					console.log("emoji_reaction request failed: " + errorThrown);
-					self.announceToScreenReader("Failed to update reaction. Please try again.");
+					//self.announceToScreenReader("Failed to update reaction. Please try again.");
 				}
 			});
 		},
@@ -408,14 +408,14 @@
 			var $notification = $(`
 				<div id="${notificationId}" class="emoji-reaction-notification">
 					<div class="emoji-reaction-notification-content">
-						<span class="emoji-reaction-notification-icon">ℹ️</span>
-						<span class="emoji-reaction-notification-text">${message}</span>
+						<span class="emoji-reaction-notification-icon" aria-disabled>ℹ️</span>
+						<span class="emoji-reaction-notification-text" >${message}</span>
 						<button class="emoji-reaction-notification-close">&times;</button>
 					</div>
 				</div>
 			`);
 
-			$('body').append($notification);
+			$('#spaces-toast-container').append($notification);
 
 			$notification.find('.emoji-reaction-notification-close').on('click', function () {
 				$notification.css('animation', 'slideOutToRight 0.3s ease-in');
@@ -438,10 +438,10 @@
 		},
 
 		// Announce message to screen readers
-		announceToScreenReader: function (message) {
+		/* announceToScreenReader: function (message) {
 			var $announcer = $('#emoji-reaction-sr-announcer');
 			if (!$announcer.length) {
-				$announcer = $('<div id="emoji-reaction-sr-announcer" aria-live="polite" aria-atomic="true" class="sr-only"></div>');
+				$announcer = $('<div id="emoji-reaction-sr-announcer"  aria-atomic="true" class="sr-only"></div>');
 				$('body').append($announcer);
 
 				// Add screen reader only styles
@@ -469,7 +469,7 @@
 			setTimeout(function () {
 				$announcer.text(message);
 			}, 100);
-		}
+		} */
 	};
 
 	// Initialize on DOM ready and window load

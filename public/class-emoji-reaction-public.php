@@ -232,7 +232,7 @@ class Emoji_Reaction_Public {
 		$container_id = 'emoji-reaction-' . $state_data['object_type'] . '-' . $state_data['object_id'];
 
 		// Add semantic wrapper with proper ARIA attributes
-		echo '<section class="emoji-reaction-wrapper ' . esc_attr( $state_data['align'] ) . '" id="' . esc_attr( $container_id ) . '" role="group" aria-label="' . esc_attr( __( 'Emoji reactions', 'emoji-reaction' ) ) . '" aria-live="polite"></section>';
+		echo '<section class="emoji-reaction-wrapper ' . esc_attr( $state_data['align'] ) . '" id="' . esc_attr( $container_id ) . '" role="group" aria-label="' . esc_attr( __( 'Emoji reactions', 'emoji-reaction' ) ) . '" ></section>';
 
 		// Output inline script with state data
 		echo '<script type="text/javascript">';
