@@ -415,7 +415,11 @@
 				</div>
 			`);
 
-			$('#spaces-toast-container').append($notification);
+			if (!$('#toast-container').length) {
+				console.log("no toast container found, appending one")
+				$('body').append('<div id="toast-container" aria-live="polite" ></div>');
+			}
+			$('#toast-container').append($notification);
 
 			$notification.find('.emoji-reaction-notification-close').on('click', function () {
 				$notification.css('animation', 'slideOutToRight 0.3s ease-in');
