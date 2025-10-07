@@ -293,10 +293,10 @@ class Emoji_Reaction_Public {
 
 		// Check user permissions for the object
 		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
-			wp_send_json_error( array( 'message' => 'You do not have permission to react to this content.' ), 403 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Sorry, you do not have permission to react to this content.' ) ), 403 );
 		}
 
-		$state = $unlike === 'true' ? 'unliked' : 'liked';
+		$state = 'true' === $unlike ? 'unliked' : 'liked';
 
 		if ( 'unliked' === $state ) {
 			$success          = $this->delete_reaction( $object_id, $object_type, $emoji, $user_id );

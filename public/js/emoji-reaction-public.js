@@ -332,52 +332,40 @@
 			var data = this.containers[containerId];
 			var self = this;
 
-			var ajaxData = {
-				action: 'emoji_reaction_ajax_save_action',
-				object_id: data.object_id,
-				object_type: data.object_type,
-				emoji: emoji,
-				unlike: unlike,
-				nonce: data.nonce,
-			};
+			var formData = new FormData();
+			formData.append('action', 'emoji_reaction_ajax_save_action');
+			formData.append('object_id', data.object_id);
+			formData.append('object_type', data.object_type);
+			formData.append('emoji', emoji);
+			formData.append('unlike', unlike);
+			formData.append('nonce', data.nonce);
 
-			$.ajax({
-				url: emoji_reaction.ajax_url,
-				type: 'POST',
-				dataType: 'json',
-				data: ajaxData,
-				success: function (response) {
-					if (response.success && response.data.state_data) {
-						// Update state and re-render
-						self.containers[containerId] = response.data.state_data;
+			fetch(emoji_reaction.ajax_url, {
+				method: 'POST',
+				body: formData,
+				credentials: 'same-origin'
+			})
+				.then(function (response) {
+					return response.json();
+				})
+				.then(function (response) {
+					if (response.success && response.data && response.data.state_data) {
+						self.containers[containerId] = response.data.state_data; // Update state and re-render
 						self.renderContainer(containerId);
 
-						// Announce to screen readers
-						var actionInfo = response.data.action_info;
-						if (actionInfo) {
-							var message;
-							if (actionInfo.state === 'liked') {
-								message = 'Added ' + actionInfo.emoji + ' reaction';
-							} else {
-								message = 'Removed ' + actionInfo.emoji + ' reaction';
-							}
-							//self.announceToScreenReader(message);
+						if (response?.data?.action_info?.limit_message) { // Handle notifications.
+							self.showNotification(response?.data?.action_info?.limit_message);
 						}
-
-						// Handle notifications
-						if (response.data.action_info && response.data.action_info.limit_message) {
-							self.showNotification(response.data.action_info.limit_message);
-						}
-
-						// Fire custom event for charts
-						self.fireCustomEvent(response.data);
+						self.fireCustomEvent(response.data); // Fire custom event for charts.
+					} else {
+						console.error("emoji_reaction request failed", response);
+						self.showNotification(response.data?.message || "Unable to update reaction. Please try again.");
 					}
-				},
-				error: function (jqXHR, textStatus, errorThrown) {
-					console.log("emoji_reaction request failed: " + errorThrown);
-					//self.announceToScreenReader("Failed to update reaction. Please try again.");
-				}
-			});
+				})
+				.catch(function (error) {
+					console.error("emoji_reaction request failed", error);
+					self.showNotification("Unable to update reaction. Please try again.");
+				});
 		},
 
 		// Fire custom event for chart updates
