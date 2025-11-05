@@ -255,14 +255,14 @@
 				}
 			});
 
-			// Handle window resize
-			var resizeTimeout;
-			$(window).resize(function () {
-				clearTimeout(resizeTimeout);
-				resizeTimeout = setTimeout(function () {
-					self.handleResize();
-				}, 150);
-			});
+		// Handle window resize
+		var resizeTimeout;
+		$(window).on('resize', function () {
+			clearTimeout(resizeTimeout);
+			resizeTimeout = setTimeout(function () {
+				self.handleResize();
+			}, 150);
+		});
 		},
 
 		// Handle emoji popup (show popup instead of voting)
