@@ -60,8 +60,11 @@ class Emoji_Reaction_Public {
 	 *
 	 */
 	public function enqueue_styles(): void {
-		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', '2.9.4' );
-		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', '2.9.4' );
+		if ( ! is_user_logged_in() ) {
+			return; // return if user is not logged in
+		}
+		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', array(),'2.9.4' );
+		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css',array(), '2.9.4' );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 		wp_enqueue_style( $this->plugin_name . '-chart', plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-chart.css', array(), $this->version, 'all' );
 	}
@@ -71,7 +74,9 @@ class Emoji_Reaction_Public {
 	 *
 	 */
 	public function enqueue_scripts(): void {
-
+		if ( ! is_user_logged_in() ) {
+			return; // return if user is not logged in
+		}
 		wp_enqueue_script( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.js', array( 'jquery' ), '2.9.4', false );
 		wp_enqueue_script( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.js', array( 'jquery' ), '2.9.4', false );
 
