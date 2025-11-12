@@ -75,7 +75,7 @@
 
 		/* Focus indicator for accessibility */
 		&:focus {
-			outline: 2px solid #005fcc;
+			outline: 2px solid Highlight;
 			outline-offset: 2px;
 		}
 
