@@ -384,16 +384,16 @@ class Emoji_Reaction_Public {
 				return false;
 			}
 
-			// Check if user can read the post
-			return is_post_publicly_viewable( $post );
+			// Check if user can read the post (handles private posts properly)
+			return current_user_can( 'read_post', $post_id );
 		} else {
 			$post = get_post( $object_id );
 			if ( ! $post ) {
 				return false; // Post doesn't exist
 			}
 
-			// Check if post is published and publicly viewable
-			return is_post_publicly_viewable( $post );
+			// Check if user can read the post (handles private posts properly)
+			return current_user_can( 'read_post', $object_id );
 		}
 	}
 
