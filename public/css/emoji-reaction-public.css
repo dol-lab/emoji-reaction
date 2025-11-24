@@ -73,14 +73,9 @@
 		display: flex;
 		align-items: center;
 
-		/* Focus indicator for accessibility */
-		&:focus {
-			outline: 2px solid Highlight;
-			outline-offset: 2px;
-		}
-
 		.icon-thumpup-plus {
 			mask-image: url("thumbs-up.svg");
+			mask-repeat: no-repeat;
 			width: 20px;
 			height: 15px;
 			background-color: currentColor;
