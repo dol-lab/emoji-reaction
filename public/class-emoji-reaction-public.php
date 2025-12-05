@@ -63,8 +63,8 @@ class Emoji_Reaction_Public {
 		if ( ! is_user_logged_in() ) {
 			return; // return if user is not logged in
 		}
-		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', array(),'2.9.4' );
-		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css',array(), '2.9.4' );
+		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', array(), '2.9.4' );
+		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', array(), '2.9.4' );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
 		wp_enqueue_style( $this->plugin_name . '-chart', plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-chart.css', array(), $this->version, 'all' );
 	}
@@ -436,7 +436,7 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  bool|array   True on success, false on failure, array with removed reaction info if oldest was removed
 	 */
-	private function save_reaction( int $object_id, $object_type, $emoji, $user_id ) {
+	public function save_reaction( int $object_id, $object_type, $emoji, $user_id ) {
 		$likes            = $this->get_reactions( $object_id, $object_type );
 		$time             = intval( time() );
 		$removed_reaction = null;
@@ -485,7 +485,7 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  bool        True on success, false on failure (or if the value passed is the same as in db)
 	 */
-	private function delete_reaction( $object_id, $object_type, $emoji, $user_id ) {
+	public function delete_reaction( $object_id, $object_type, $emoji, $user_id ) {
 		$likes = $this->get_reactions( $object_id, $object_type );
 
 		$key = isset( $likes[ $emoji ] ) && is_array( $likes[ $emoji ] ) ? array_search( $user_id, $likes[ $emoji ] ) : false;
@@ -501,12 +501,12 @@ class Emoji_Reaction_Public {
 		}
 
 		if ( empty( $likes ) ) {
-			if ( $object_type === 'comment' ) {
+			if ( 'comment' === $object_type ) {
 				$update = delete_comment_meta( $object_id, $this->meta_key );
 			} else {
 				$update = delete_post_meta( $object_id, $this->meta_key );
 			}
-		} elseif ( $object_type === 'comment' ) {
+		} elseif ( 'comment' === $object_type ) {
 				$update = update_comment_meta( $object_id, $this->meta_key, $likes );
 		} else {
 			$update = update_post_meta( $object_id, $this->meta_key, $likes );
