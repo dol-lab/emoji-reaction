@@ -441,6 +441,13 @@ class Emoji_Reaction_Public {
 		$time             = intval( time() );
 		$removed_reaction = null;
 
+		// Ensure unique timestamp to prevent overwriting reactions that happen at the same second.
+		if ( ! empty( $likes ) && isset( $likes[ $emoji ] ) ) {
+			while ( array_key_exists( $time, $likes[ $emoji ] ) ) {
+				$time++;
+			}
+		}
+
 		if ( $emoji === '' ) {
 			return false;
 		}
