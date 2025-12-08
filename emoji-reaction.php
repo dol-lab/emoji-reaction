@@ -34,7 +34,6 @@ function deactivate_emoji_reaction(): void {
 	Emoji_Reaction_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_emoji_reaction' );
 register_deactivation_hook( __FILE__, 'deactivate_emoji_reaction' );
 
 /**
