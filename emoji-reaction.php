@@ -26,15 +26,6 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'EMOJI_REACTION_VERSION', '0.5.0' );
 
 /**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-emoji-reaction-activator.php
- */
-function activate_emoji_reaction(): void {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reaction-activator.php';
-	Emoji_Reaction_Activator::activate();
-}
-
-/**
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-emoji-reaction-deactivator.php
  */
