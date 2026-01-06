@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Emoji Reaction\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 10:46+0000\n"
-"PO-Revision-Date: 2026-01-06 19:27+0000\n"
+"PO-Revision-Date: 2026-01-06 19:23+0000\n"
 "Last-Translator: Till J\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -16,6 +16,7 @@ msgstr ""
 "X-Domain: emoji-reaction"
 
 #. Description of the plugin
+#, fuzzy
 msgid "Adds emoji reactions to posts and comments by logged in users."
 msgstr ""
 "Fügt Emoji-Reaktionen zu Beiträgen und Kommentaren von eingeloggten Nutzern "
@@ -23,7 +24,7 @@ msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:23
 msgid "analytics"
-msgstr "analytik"
+msgstr ""
 
 #: public/class-emoji-reaction-public.php:557
 msgid "Anonymous"
@@ -36,37 +37,35 @@ msgstr "Apfel"
 #: public/js/emoji-reaction-chart-block.js:54
 #: public/js/emoji-reaction-chart-block.js:95
 msgid "Bar Chart"
-msgstr "Balkendiagramm"
+msgstr ""
 
 #: includes/class-emoji-reaction.php:238
 msgid "blueberries"
-msgstr "Blaubeeren"
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:22
 msgid "chart"
-msgstr "Diagramm"
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:47
 msgid "Chart Settings"
-msgstr "Diagramm-Einstellungen"
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:51
 msgid "Chart Type"
-msgstr "Diagramm-Typ"
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:94
 msgid "Chart Type: "
-msgstr "Diagramm-Typ:"
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:104
 msgid "Chart will display on the frontend based on current post reactions."
 msgstr ""
-"Das Diagramm wird im Frontend basierend auf den aktuellen Beitragsreaktionen "
-"angezeigt."
 
 #: includes/class-emoji-reaction.php:229
 msgid "clapping hands"
-msgstr "Klatschende Hände"
+msgstr ""
 
 #. Author of the plugin
 #, fuzzy
@@ -74,30 +73,30 @@ msgid "Digital Open Learning Lab"
 msgstr "Digital Open Learning Lab"
 
 #: public/js/emoji-reaction-chart-block.js:16
-#, fuzzy
 msgid "Display a chart of emoji reactions for the current post."
-msgstr "Zeigt eine Tabelle der Emoji-Reaktionen für den aktuellen Beitrag an."
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:55
 #: public/js/emoji-reaction-chart-block.js:95
-#, fuzzy
 msgid "Donut Chart"
-msgstr "Donut-Tabelle"
+msgstr ""
 
 #: public/js/emoji-reaction-chart-block.js:20
 msgid "emoji"
-msgstr "emoji"
+msgstr ""
 
 #. Name of the plugin
+#, fuzzy
 msgid "Emoji Reaction"
 msgstr "Emoji-Reaktion"
 
 #: public/js/emoji-reaction-chart-block.js:15
 #: public/js/emoji-reaction-chart-block.js:86
 msgid "Emoji Reaction Chart"
-msgstr "Emoji-Reaktionstabelle"
+msgstr ""
 
 #: public/class-emoji-reaction-public.php:240
+#, fuzzy
 msgid "Emoji reactions"
 msgstr "Emoji Reaktionen"
 
@@ -107,7 +106,7 @@ msgstr "Feuer"
 
 #: includes/class-emoji-reaction.php:230
 msgid "folded hands"
-msgstr "gefaltete Hände"
+msgstr ""
 
 #: includes/class-emoji-reaction.php:225
 msgid "heart"
@@ -125,7 +124,7 @@ msgstr "https://spaces.kisd.de"
 
 #: includes/class-emoji-reaction.php:234
 msgid "hundred points"
-msgstr "hundert Punkte"
+msgstr ""
 
 #: admin/class-emoji-reaction-admin.php:74
 #, fuzzy
@@ -142,8 +141,9 @@ msgid "Loading chart..."
 msgstr "Tabelle laden..."
 
 #: includes/class-emoji-reaction-chart.php:156
+#, fuzzy
 msgid "No post ID available for chart."
-msgstr "Keine Post-ID für das Diagramm verfügbar."
+msgstr "Keine Post-ID für die Karte verfügbar."
 
 #: includes/class-emoji-reaction-chart.php:315
 #, fuzzy
@@ -160,9 +160,8 @@ msgid "Post not found."
 msgstr "Beitrag nicht gefunden."
 
 #: public/js/emoji-reaction-chart-block.js:21
-#, fuzzy
 msgid "reaction"
-msgstr "reaktion"
+msgstr ""
 
 #: includes/class-emoji-reaction-chart.php:323
 #, fuzzy
@@ -170,12 +169,13 @@ msgid "Reactions"
 msgstr "Reaktionen"
 
 #: includes/class-emoji-reaction-chart.php:161
+#, fuzzy
 msgid "Refresh chart"
-msgstr "Diagramm aktualisieren"
+msgstr "Tabelle aktualisieren"
 
 #: includes/class-emoji-reaction.php:233
 msgid "rocket"
-msgstr "Rakete"
+msgstr ""
 
 #: admin/class-emoji-reaction-admin.php:82
 #, fuzzy
@@ -184,7 +184,7 @@ msgstr "Sicherheitsprüfung fehlgeschlagen."
 
 #: includes/class-emoji-reaction.php:232
 msgid "sparkles"
-msgstr "Funkeln"
+msgstr ""
 
 #: includes/class-emoji-reaction.php:237
 msgid "strawberry"
@@ -196,7 +196,7 @@ msgstr "Überrascht"
 
 #: includes/class-emoji-reaction.php:228
 msgid "thinking face"
-msgstr "denkendes Gesicht"
+msgstr ""
 
 #: includes/class-emoji-reaction.php:224
 msgid "thumbs down"
@@ -222,8 +222,9 @@ msgstr ""
 "Trotzdem fortfahren?"
 
 #: admin/class-emoji-reaction-admin.php:93
+#, fuzzy
 msgid "You do not have permission to edit this post."
-msgstr "Du hast nicht die Berechtigung, diesen Beitrag zu bearbeiten."
+msgstr "Du hast nicht die Erlaubnis, diesen Beitrag zu bearbeiten."
 
 #. %s: emoji that was removed
 #: public/class-emoji-reaction-public.php:347
