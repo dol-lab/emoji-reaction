@@ -159,6 +159,9 @@
 
 		// Build dropdown item
 		buildDropdownItem: function (emoji, data) {
+			if (emoji.legacy) {
+				return '';
+			}
 			var votedClass = emoji.user_voted ? 'voted' : 'not-voted';
 			var buttonLabel = 'React with ' + emoji.name;
 			if (emoji.user_voted) {

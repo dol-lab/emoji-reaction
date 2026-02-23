@@ -201,6 +201,39 @@ class Emoji_Reaction_Public {
 			);
 		}
 
+		// Show any reactions that exist in the DB but are no longer in the active emoji list
+		$processed_emojis = array_column( $emojis, 0 );
+		foreach ( $likes as $emoji_char => $user_ids_map ) {
+			if ( in_array( $emoji_char, $processed_emojis, true ) ) {
+				continue;
+			}
+
+			$user_ids = array_values( $user_ids_map );
+			$count    = count( $user_ids );
+			if ( 0 === $count ) {
+				continue;
+			}
+
+			$user_names       = array();
+			$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
+			foreach ( $user_ids_limited as $user_id ) {
+				$user_names[] = array(
+					'id'   => $user_id,
+					'name' => $this->get_user_name( $user_id ),
+				);
+			}
+
+			$emoji_data[] = array(
+				'emoji'       => $emoji_char,
+				'name'        => $emoji_char,
+				'count'       => $count,
+				'user_voted'  => in_array( $current_user_id, $user_ids, true ),
+				'user_names'  => $user_names,
+				'total_users' => count( $user_ids ),
+				'legacy'      => true,
+			);
+		}
+
 		// Sort emojis: user voted first, then by count (descending), then by original order
 		usort(
 			$emoji_data,
