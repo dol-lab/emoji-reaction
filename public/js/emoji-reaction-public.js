@@ -32,7 +32,7 @@
 		},
 
 		// Render a container with current state
-		renderContainer: function (containerId, openEmoji) {
+		renderContainer: function (containerId) {
 			var data = this.containers[containerId];
 			// Use attribute selector to handle potential multiple instances with same ID
 			var $containers = $('[id="' + containerId + '"]');
@@ -52,9 +52,9 @@
 				// Initialize UI components
 				self.initializeUIComponents($container);
 
-				// Optionally open a popup
-				if (openEmoji) {
-					$container.find('.emoji-reaction-button-popup[data-emoji="' + openEmoji + '"]').popup('show');
+				// Optionally open a popup if one was open before re-render
+				if (data.currentOpenEmoji) {
+					$container.find('.emoji-reaction-button-popup[data-emoji="' + data.currentOpenEmoji + '"]').popup('show');
 				}
 			});
 		},
@@ -75,9 +75,9 @@
 				dropdownItems += window.EmojiReaction.buildDropdownItem(emoji, data);
 			});
 
-			// Build add new button container (only show if user is logged in)
+			// Build add new button container (only show if user is logged in AND has permission to react)
 			var addNewContainer = '';
-			if (data.current_user_id && data.current_user_id > 0) {
+			if (data.current_user_id && data.current_user_id > 0 && data.can_react) {
 				var popupId = 'emoji-addnew-popup-' + data.object_type + '-' + data.object_id;
 				addNewContainer = `
 					<div class="emoji-reaction-button-addnew-container">
@@ -124,7 +124,7 @@
 			var moreUsers = '';
 
 			if (data.usernames_loading) {
-				userList = '<li class="loading">Loading...</li>';
+				userList = '<li class="loading">' + emoji_reaction.loading + '</li>';
 			} else if (emoji.user_names && emoji.user_names.length > 0) {
 				emoji.user_names.forEach(function (user) {
 					userList += `<li data-user-id="${user.id}">${user.name}</li>`;
@@ -135,7 +135,7 @@
 					moreUsers = `<p>And ${moreCount} more ...</p>`;
 				}
 			} else if (emoji.count > 0) {
-				userList = '<li class="loading">Click to see who reacted</li>';
+				userList = '<li class="loading">' + emoji_reaction.loading + '</li>';
 			}
 
 			// Create accessible button label
@@ -190,14 +190,42 @@
 
 		// Initialize UI components (popups)
 		initializeUIComponents: function ($container) {
+			var self = this;
+			var containerId = $container.closest('.emoji-reaction-wrapper').attr('id');
+
 			$container.find('.emoji-reaction-button-popup').popup({
 				inline: true,
-				addTouchEvents: true, // Enable touch events for mobile
+				addTouchEvents: false, // We'll handle touch manually for longpress
 				variation: 'inverted',
 				position: 'top right',
-				on: 'manual', // Set to manual so we can control when it shows
+				on: 'hover',
+				hoverable: true,
+				delay: {
+					show: 200,
+					hide: 100
+				},
 				onShow: function () {
 					$(this).parent().parent().find('.emoji-reaction-button-addnew').popup('hide');
+
+					var $button = $(this);
+					var emoji = $button.data('emoji');
+					var data = self.containers[containerId];
+
+					// Track current open emoji
+					if (data) {
+						data.currentOpenEmoji = emoji;
+					}
+
+					if (data && !data.usernames_loaded && !data.usernames_loading) {
+						self.fetchUsernames(containerId);
+					}
+				},
+				onHide: function () {
+					var $button = $(this);
+					var data = self.containers[containerId];
+					if (data && data.currentOpenEmoji === $button.data('emoji')) {
+						data.currentOpenEmoji = null;
+					}
 				}
 			});
 
@@ -219,18 +247,32 @@
 		// Set up global event listeners
 		setupEventListeners: function () {
 			var self = this;
+			var longPressTimer;
+			var isLongPress = false;
 
-			// Handle emoji button clicks in .emoji-reaction-wrapper
+			// Handle emoji button clicks in .emoji-reaction-wrapper (all buttons: main and dropdown)
 			$(document).on('click.emoji', '.emoji-reaction-wrapper .emoji-reaction-button', function (e) {
+				if (isLongPress) {
+					isLongPress = false;
+					return;
+				}
 				e.preventDefault();
 				e.stopPropagation();
-				self.handleEmojiPopup($(this));
+				self.handleEmojiClick($(this));
 			});
 
-			// Handle emoji button clicks in add-new popup (these should still vote)
-			$(document).on('click.emoji', '.emoji-reaction-button-addnew-container .emoji-reaction-button', function (e) {
-				e.preventDefault();
-				self.handleEmojiClick($(this));
+			// Handle touch for longpress on main buttons
+			$(document).on('touchstart.emoji', '.emoji-reaction-wrapper .emoji-reaction-button-popup', function (e) {
+				var $button = $(this);
+				isLongPress = false;
+				longPressTimer = setTimeout(function () {
+					isLongPress = true;
+					self.handleEmojiPopup($button);
+				}, 500); // 500ms for long press
+			});
+
+			$(document).on('touchend.emoji touchmove.emoji', '.emoji-reaction-wrapper .emoji-reaction-button-popup', function (e) {
+				clearTimeout(longPressTimer);
 			});
 
 			// Handle keyboard navigation
@@ -243,21 +285,14 @@
 
 					if ($button.hasClass('emoji-reaction-button-addnew')) {
 						self.handleAddNewToggle($button);
-					} else if ($button.hasClass('emoji-reaction-button-popup')) {
-						self.handleEmojiPopup($button);
+					} else {
+						// For both main and dropdown buttons, Enter/Space now votes
+						self.handleEmojiClick($button);
 					}
 				} else if (e.key === 'Escape') {
 					// Close popups on Escape
 					$('.emoji-reaction-button-popup').popup('hide');
 					$('.emoji-reaction-button-addnew').popup('hide');
-				}
-			});
-
-			// Handle keyboard navigation in dropdown menus
-			$(document).on('keydown.emoji', '.emoji-reaction-button-addnew-container .emoji-reaction-button', function (e) {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault();
-					self.handleEmojiClick($(this));
 				}
 			});
 
@@ -269,14 +304,14 @@
 				}
 			});
 
-		// Handle window resize
-		var resizeTimeout;
-		$(window).on('resize', function () {
-			clearTimeout(resizeTimeout);
-			resizeTimeout = setTimeout(function () {
-				self.handleResize();
-			}, 150);
-		});
+			// Handle window resize
+			var resizeTimeout;
+			$(window).on('resize', function () {
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(function () {
+					self.handleResize();
+				}, 150);
+			});
 		},
 
 		// Handle emoji popup (show popup instead of voting)
@@ -297,7 +332,7 @@
 
 			// Load usernames if not already loaded and not currently loading
 			if (data && !data.usernames_loaded && !data.usernames_loading) {
-				this.fetchUsernames(containerId, emoji);
+				this.fetchUsernames(containerId);
 			} else {
 				// Show the popup for this emoji button
 				$button.popup('show');
@@ -305,12 +340,12 @@
 		},
 
 		// Fetch usernames via AJAX
-		fetchUsernames: function (containerId, openEmoji) {
+		fetchUsernames: function (containerId) {
 			var data = this.containers[containerId];
 			var self = this;
 
 			data.usernames_loading = true;
-			this.renderContainer(containerId, openEmoji);
+			this.renderContainer(containerId);
 
 			var formData = new FormData();
 			formData.append('action', 'emoji_reaction_ajax_get_usernames');
@@ -332,14 +367,16 @@
 						// Merge fetched usernames into existing state
 						var newState = response.data.state_data;
 						newState.usernames_loaded = true;
+						// Preserve currentOpenEmoji state
+						newState.currentOpenEmoji = data.currentOpenEmoji;
 						self.containers[containerId] = newState;
-						self.renderContainer(containerId, openEmoji);
+						self.renderContainer(containerId);
 					}
 				})
 				.catch(function (error) {
 					console.error("fetchUsernames failed", error);
 					data.usernames_loading = false;
-					self.renderContainer(containerId, openEmoji);
+					self.renderContainer(containerId);
 				});
 		},
 
@@ -375,9 +412,22 @@
 			var emoji = $button.data('emoji');
 			var isVoted = $button.hasClass('voted');
 
+			// Check if user has permission to react (add)
+			if (!isVoted && !data.can_react) {
+				this.showNotification("Sorry, you do not have permission to react to this content.");
+				return;
+			}
+
 			// Close popups
 			$wrapper.find('.emoji-reaction-button-addnew').popup('hide');
 			$button.removeClass('selected active');
+
+			// Check confirmation for removing when no permission to re-add
+			if (isVoted && !data.can_react) {
+				if (!confirm(emoji_reaction.confirm_remove_no_perm)) {
+					return;
+				}
+			}
 
 			// Check thumbs down confirmation
 			if (emoji === '👎' && !isVoted) {

@@ -102,8 +102,10 @@ class Emoji_Reaction_Public {
 			$this->plugin_name . '-public-js',
 			'emoji_reaction',
 			array(
-				'ajax_url'          => admin_url( 'admin-ajax.php' ),
-				'thumbs_down_alert' => __( "We love constructive feedback! How about a comment on what can be improved instead? Pro tip: start with something positive 😉 \nStill want to continue?", 'emoji-reaction' ),
+				'ajax_url'               => admin_url( 'admin-ajax.php' ),
+				'thumbs_down_alert'      => __( "We love constructive feedback! How about a comment on what can be improved instead? Pro tip: start with something positive 😉 \nStill want to continue?", 'emoji-reaction' ),
+				'confirm_remove_no_perm' => __( "Are you sure you want to remove your reaction? You won't be able to add it back later.", 'emoji-reaction' ),
+				'loading'                => __( "Loading...", 'emoji-reaction' ),
 			)
 		);
 		wp_localize_script( $this->plugin_name . '-chart-js', 'emoji_reaction_chart', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
@@ -261,6 +263,7 @@ class Emoji_Reaction_Public {
 			'total_count'     => $this->get_reaction_count( $likes ),
 			'emojis'          => $emoji_data,
 			'current_user_id' => $current_user_id,
+			'can_react'       => $this->user_can_react_to_object( $object_id, $object_type ),
 		);
 	}
 
@@ -311,7 +314,7 @@ class Emoji_Reaction_Public {
 
 		// Check user permissions
 		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
-			wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
+			// wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
 		}
 
 		$default_args                    = $this->get_default_args();
@@ -364,14 +367,15 @@ class Emoji_Reaction_Public {
 			wp_send_json_error( array( 'message' => 'Invalid object ID.' ), 400 );
 		}
 
-		// Validate emoji (check if it's in allowed list)
+		// Validate emoji (check if it's in allowed list, unless we are unliking)
 		$allowed_emojis = array_column( apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() ), 0 );
-		if ( ! in_array( $emoji, $allowed_emojis, true ) ) {
+		if ( 'true' !== $unlike && ! in_array( $emoji, $allowed_emojis, true ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid emoji.' ), 400 );
 		}
 
-		// Check user permissions for the object
-		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
+		// Check user permissions for the object (if NOT unliking)
+		$can_react = $this->user_can_react_to_object( $object_id, $object_type );
+		if ( 'true' !== $unlike && ! $can_react ) {
 			wp_send_json_error( array( 'message' => esc_html__( 'Sorry, you do not have permission to react to this content.' ) ), 403 );
 		}
 
