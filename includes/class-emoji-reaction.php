@@ -167,6 +167,8 @@ class Emoji_Reaction {
 		 */
 		$this->loader->add_action( 'wp_ajax_emoji_reaction_ajax_save_action', $plugin_public, 'emoji_reaction_ajax_save_action' );
 		$this->loader->add_action( 'wp_ajax_nopriv_emoji_reaction_ajax_save_action', $plugin_public, 'emoji_reaction_ajax_save_action' );
+		$this->loader->add_action( 'wp_ajax_emoji_reaction_ajax_get_usernames', $plugin_public, 'emoji_reaction_ajax_get_usernames' );
+		$this->loader->add_action( 'wp_ajax_nopriv_emoji_reaction_ajax_get_usernames', $plugin_public, 'emoji_reaction_ajax_get_usernames' );
 
 		/**
 		 * Custom actions/filters, which can be inserted into a theme

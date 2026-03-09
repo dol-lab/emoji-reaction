@@ -32,7 +32,7 @@
 		},
 
 		// Render a container with current state
-		renderContainer: function (containerId) {
+		renderContainer: function (containerId, openEmoji) {
 			var data = this.containers[containerId];
 			// Use attribute selector to handle potential multiple instances with same ID
 			var $containers = $('[id="' + containerId + '"]');
@@ -51,6 +51,11 @@
 
 				// Initialize UI components
 				self.initializeUIComponents($container);
+
+				// Optionally open a popup
+				if (openEmoji) {
+					$container.find('.emoji-reaction-button-popup[data-emoji="' + openEmoji + '"]').popup('show');
+				}
 			});
 		},
 
@@ -118,13 +123,19 @@
 			var userList = '';
 			var moreUsers = '';
 
-			emoji.user_names.forEach(function (user) {
-				userList += `<li data-user-id="${user.id}">${user.name}</li>`;
-			});
+			if (data.usernames_loading) {
+				userList = '<li class="loading">Loading...</li>';
+			} else if (emoji.user_names && emoji.user_names.length > 0) {
+				emoji.user_names.forEach(function (user) {
+					userList += `<li data-user-id="${user.id}">${user.name}</li>`;
+				});
 
-			if (emoji.total_users > data.max_usernames) {
-				var moreCount = emoji.total_users - data.max_usernames;
-				moreUsers = `<p>And ${moreCount} more ...</p>`;
+				if (emoji.total_users > data.max_usernames) {
+					var moreCount = emoji.total_users - data.max_usernames;
+					moreUsers = `<p>And ${moreCount} more ...</p>`;
+				}
+			} else if (emoji.count > 0) {
+				userList = '<li class="loading">Click to see who reacted</li>';
 			}
 
 			// Create accessible button label
@@ -271,16 +282,65 @@
 		// Handle emoji popup (show popup instead of voting)
 		handleEmojiPopup: function ($button) {
 			var $wrapper = $button.closest('.emoji-reaction-wrapper');
+			var containerId = $wrapper.attr('id');
+			var data = this.containers[containerId];
+			var emoji = $button.data('emoji');
 
 			// Close all existing popups first
 			$('.emoji-reaction-button-popup').popup('hide');
 			$wrapper.find('.emoji-reaction-button-addnew').popup('hide');
 			$button.removeClass('selected active');
 
-			// Show the popup for this emoji button
-			if ($button.hasClass('emoji-reaction-button-popup')) {
+			if (!$button.hasClass('emoji-reaction-button-popup')) {
+				return;
+			}
+
+			// Load usernames if not already loaded and not currently loading
+			if (data && !data.usernames_loaded && !data.usernames_loading) {
+				this.fetchUsernames(containerId, emoji);
+			} else {
+				// Show the popup for this emoji button
 				$button.popup('show');
 			}
+		},
+
+		// Fetch usernames via AJAX
+		fetchUsernames: function (containerId, openEmoji) {
+			var data = this.containers[containerId];
+			var self = this;
+
+			data.usernames_loading = true;
+			this.renderContainer(containerId, openEmoji);
+
+			var formData = new FormData();
+			formData.append('action', 'emoji_reaction_ajax_get_usernames');
+			formData.append('object_id', data.object_id);
+			formData.append('object_type', data.object_type);
+			formData.append('nonce', data.nonce);
+
+			fetch(emoji_reaction.ajax_url, {
+				method: 'POST',
+				body: formData,
+				credentials: 'same-origin'
+			})
+				.then(function (response) {
+					return response.json();
+				})
+				.then(function (response) {
+					data.usernames_loading = false;
+					if (response.success && response.data && response.data.state_data) {
+						// Merge fetched usernames into existing state
+						var newState = response.data.state_data;
+						newState.usernames_loaded = true;
+						self.containers[containerId] = newState;
+						self.renderContainer(containerId, openEmoji);
+					}
+				})
+				.catch(function (error) {
+					console.error("fetchUsernames failed", error);
+					data.usernames_loading = false;
+					self.renderContainer(containerId, openEmoji);
+				});
 		},
 
 		// Handle add new button toggle

@@ -162,7 +162,7 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  array  Complete state data.
 	 */
-	private function get_state_data( $object_id, $object_type, $args ) {
+	private function get_state_data( $object_id, $object_type, $args, $include_usernames = false ) {
 		$likes           = $this->get_reactions( $object_id, $object_type );
 		$emojis          = $args['emojis'];
 		$current_user_id = $args['current_user_id'];
@@ -182,13 +182,15 @@ class Emoji_Reaction_Public {
 			}
 
 			// Get user names (limited)
-			$user_names       = array();
-			$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
-			foreach ( $user_ids_limited as $user_id ) {
-				$user_names[] = array(
-					'id'   => $user_id,
-					'name' => $this->get_user_name( $user_id ),
-				);
+			$user_names = array();
+			if ( $include_usernames ) {
+				$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
+				foreach ( $user_ids_limited as $user_id ) {
+					$user_names[] = array(
+						'id'   => $user_id,
+						'name' => $this->get_user_name( $user_id ),
+					);
+				}
 			}
 
 			$emoji_data[] = array(
@@ -214,13 +216,15 @@ class Emoji_Reaction_Public {
 				continue;
 			}
 
-			$user_names       = array();
-			$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
-			foreach ( $user_ids_limited as $user_id ) {
-				$user_names[] = array(
-					'id'   => $user_id,
-					'name' => $this->get_user_name( $user_id ),
-				);
+			$user_names = array();
+			if ( $include_usernames ) {
+				$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
+				foreach ( $user_ids_limited as $user_id ) {
+					$user_names[] = array(
+						'id'   => $user_id,
+						'name' => $this->get_user_name( $user_id ),
+					);
+				}
 			}
 
 			$emoji_data[] = array(
@@ -280,6 +284,43 @@ class Emoji_Reaction_Public {
 		echo '  window.EmojiReaction.initContainer(' . wp_json_encode( $container_id ) . ');';
 		echo '}';
 		echo '</script>';
+	}
+
+	/**
+	 * Handles fetching usernames via ajax.
+	 *
+	 * @return  void
+	 */
+	public function emoji_reaction_ajax_get_usernames() {
+		// Check if required POST data exists
+		if ( ! isset( $_POST['nonce'], $_POST['object_id'], $_POST['object_type'] ) ) {
+			wp_send_json_error( array( 'message' => 'Missing required data.' ), 400 );
+		}
+
+		// Verify nonce for CSRF protection
+		if ( ! wp_verify_nonce( wp_unslash( $_POST['nonce'] ), '_emoji_reaction_action' ) ) {
+			wp_send_json_error( array( 'message' => 'Security check failed.' ), 401 );
+		}
+
+		$object_id   = intval( $_POST['object_id'] );
+		$object_type = sanitize_text_field( wp_unslash( $_POST['object_type'] ) );
+
+		if ( ! in_array( $object_type, array( 'post', 'comment' ), true ) || $object_id <= 0 ) {
+			wp_send_json_error( array( 'message' => 'Invalid parameters.' ), 400 );
+		}
+
+		// Check user permissions
+		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
+			wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
+		}
+
+		$default_args                    = $this->get_default_args();
+		$default_args['current_user_id'] = get_current_user_id();
+
+		// Get state data WITH usernames
+		$state_data = $this->get_state_data( $object_id, $object_type, $default_args, true );
+
+		wp_send_json_success( array( 'state_data' => $state_data ) );
 	}
 
 	/**
