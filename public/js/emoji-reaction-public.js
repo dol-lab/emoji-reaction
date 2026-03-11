@@ -1,84 +1,109 @@
-(function ($) {
+(($) => {
 	'use strict';
 
-	// Global state management
-	window.EmojiReaction = {
-		containers: {},
-		eventsSetup: false,
+	const LONG_PRESS_MS = 500;
+	const RESIZE_DEBOUNCE_MS = 150;
+	const NOTIFICATION_TIMEOUT_MS = 5000;
+	const DISMISS_ANIMATION_MS = 300;
+	const NOTIFICATION_ID = 'emoji-reaction-limit-notification';
+	const TOAST_CONTAINER_ID = 'toast-container';
 
-		// Initialize all containers on page load
-		init: function () {
-			// Initialize containers from inline data
+	// --- Helpers ---
+
+	const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
+	const qs = (selector, root = document) => root.querySelector(selector);
+
+	const emojiPopupId = (data, emoji) =>
+		`emoji-popup-${data.object_type}-${data.object_id}-${emoji.codePointAt(0)}`;
+
+	async function postAjax(params) {
+		const formData = new FormData();
+		for (const [key, value] of Object.entries(params)) {
+			formData.append(key, value);
+		}
+		const response = await fetch(emoji_reaction.ajax_url, {
+			method: 'POST',
+			body: formData,
+			credentials: 'same-origin',
+		});
+		return response.json();
+	}
+
+	function debounce(fn, ms) {
+		let timer;
+		return (...args) => {
+			clearTimeout(timer);
+			timer = setTimeout(() => fn(...args), ms);
+		};
+	}
+
+	function votedClass(emoji) {
+		return emoji.user_voted ? 'voted' : 'not-voted';
+	}
+
+	// --- Manager ---
+
+	class EmojiReactionManager {
+		constructor() {
+			this.containers = {};
+			this.eventsSetup = false;
+		}
+
+		init() {
 			if (window.emojiReactionData) {
-				for (var containerId in window.emojiReactionData) {
-					this.initContainer(containerId);
+				for (const id of Object.keys(window.emojiReactionData)) {
+					this.initContainer(id);
 				}
 			}
-
-			// Set up global event listeners only once
 			if (!this.eventsSetup) {
 				this.setupEventListeners();
 				this.eventsSetup = true;
 			}
-		},
+		}
 
-		// Initialize a specific container
-		initContainer: function (containerId) {
-			var data = window.emojiReactionData[containerId];
+		initContainer(containerId) {
+			const data = window.emojiReactionData[containerId];
 			if (!data) return;
-
 			this.containers[containerId] = data;
 			this.renderContainer(containerId);
-		},
+		}
 
-		// Render a container with current state
-		renderContainer: function (containerId) {
-			var data = this.containers[containerId];
-			// Use attribute selector to handle potential multiple instances with same ID
-			var $containers = $('[id="' + containerId + '"]');
-			if (!$containers.length || !data) return;
+		getContainerElements(containerId) {
+			return qsa(`[id="${containerId}"]`);
+		}
 
-			// Process each container instance
-			var self = this;
-			$containers.each(function () {
-				var $container = $(this);
-				// Clear container
-				$container.empty();
+		renderContainer(containerId) {
+			const data = this.containers[containerId];
+			const elements = this.getContainerElements(containerId);
+			if (!elements.length || !data) return;
 
-				// Build HTML
-				var html = self.buildContainerHTML(data);
-				$container.html(html);
+			for (const el of elements) {
+				el.innerHTML = this.buildContainerHTML(data);
+				this.initializeUIComponents(el);
 
-				// Initialize UI components
-				self.initializeUIComponents($container);
-
-				// Optionally open a popup if one was open before re-render
 				if (data.currentOpenEmoji) {
-					$container.find('.emoji-reaction-button-popup[data-emoji="' + data.currentOpenEmoji + '"]').popup('show');
+					$(el)
+						.find(`.emoji-reaction-button-popup[data-emoji="${data.currentOpenEmoji}"]`)
+						.popup('show');
 				}
-			});
-		},
+			}
+		}
 
-		// Build complete HTML for container
-		buildContainerHTML: function (data) {
-			// Build main emoji buttons for all emojis with count > 0
-			var mainButtons = '';
-			data.emojis.forEach(function (emoji) {
-				if (emoji.count > 0) {
-					mainButtons += window.EmojiReaction.buildEmojiButton(emoji, data);
-				}
-			});
+		// --- HTML builders ---
 
-			// Build dropdown items (all emojis)
-			var dropdownItems = '';
-			data.emojis.forEach(function (emoji) {
-				dropdownItems += window.EmojiReaction.buildDropdownItem(emoji, data);
-			});
+		buildContainerHTML(data) {
+			const mainButtons = data.emojis
+				.filter((e) => e.count > 0)
+				.map((e) => this.buildEmojiButton(e, data))
+				.join('');
 
-			// Build add new button container (only show if user is logged in AND has permission to react)
-			var addNewContainer = '';
-			if (data.current_user_id && data.current_user_id > 0 && data.can_react) {
-				var popupId = 'emoji-addnew-popup-' + data.object_type + '-' + data.object_id;
+			let addNewContainer = '';
+			if (data.current_user_id > 0 && data.can_react) {
+				const dropdownItems = data.emojis
+					.map((e) => this.buildDropdownItem(e))
+					.join('');
+
+				const popupId = `emoji-addnew-popup-${data.object_type}-${data.object_id}`;
 				addNewContainer = `
 					<div class="emoji-reaction-button-addnew-container">
 						<button
@@ -92,16 +117,10 @@
 						>
 							<i class="icon-thumpup-plus"></i>
 						</button>
-						<div
-							class="ui popup addnew-popup"
-							id="${popupId}"
-							role="menu"
-							aria-label="Choose reaction"
-						>
+						<div class="ui popup addnew-popup" id="${popupId}" role="menu" aria-label="Choose reaction">
 							<div class="item-container" role="group">${dropdownItems}</div>
 						</div>
-					</div>
-					`;
+					</div>`;
 			}
 
 			return `
@@ -110,44 +129,41 @@
 					data-object-type="${data.object_type}"
 					data-nonce="${data.nonce}"
 					data-totalcount="${data.total_count}"
-				>
-					${mainButtons}
-				</div>
-				${addNewContainer}
-				`;
-		},
+				>${mainButtons}</div>
+				${addNewContainer}`;
+		}
 
-		// Build individual emoji button
-		buildEmojiButton: function (emoji, data) {
-			var votedClass = emoji.user_voted ? 'voted' : 'not-voted';
-			var userList = '';
-			var moreUsers = '';
-
-			if (data.usernames_loading) {
-				userList = '<li class="loading">' + emoji_reaction.loading + '</li>';
-			} else if (emoji.user_names && emoji.user_names.length > 0) {
-				emoji.user_names.forEach(function (user) {
-					userList += `<li data-user-id="${user.id}">${user.name}</li>`;
-				});
-
-				if (emoji.total_users > data.max_usernames) {
-					var moreCount = emoji.total_users - data.max_usernames;
-					moreUsers = `<p>And ${moreCount} more ...</p>`;
-				}
-			} else if (emoji.count > 0) {
-				userList = '<li class="loading">' + emoji_reaction.loading + '</li>';
+		buildUserListHTML(emoji, data) {
+			if (data.usernames_loading || (emoji.count > 0 && !emoji.user_names?.length)) {
+				return {
+					userList: `<li class="loading">${emoji_reaction.loading}</li>`,
+					moreUsers: '',
+				};
 			}
 
-			// Create accessible button label
-			var buttonLabel = emoji.name + ' (' + emoji.count + ' reaction' + (emoji.count !== 1 ? 's' : '') + ')';
-			if (emoji.user_voted) {
-				buttonLabel += ' - You reacted with this';
+			if (!emoji.user_names?.length) {
+				return { userList: '', moreUsers: '' };
 			}
 
-			var popupId = 'emoji-popup-' + data.object_type + '-' + data.object_id + '-' + emoji.emoji.codePointAt(0);
+			const userList = emoji.user_names
+				.map((u) => `<li data-user-id="${u.id}">${u.name}</li>`)
+				.join('');
+
+			const moreCount = emoji.total_users - data.max_usernames;
+			const moreUsers = moreCount > 0 ? `<p>And ${moreCount} more ...</p>` : '';
+
+			return { userList, moreUsers };
+		}
+
+		buildEmojiButton(emoji, data) {
+			const { userList, moreUsers } = this.buildUserListHTML(emoji, data);
+			const popupId = emojiPopupId(data, emoji.emoji);
+
+			let buttonLabel = `${emoji.name} (${emoji.count} reaction${emoji.count !== 1 ? 's' : ''})`;
+			if (emoji.user_voted) buttonLabel += ' - You reacted with this';
 
 			return `
-				<button class="emoji-reaction-button emoji-reaction-button-popup ${votedClass}"
+				<button class="emoji-reaction-button emoji-reaction-button-popup ${votedClass(emoji)}"
 					data-emoji="${emoji.emoji}"
 					data-count="${emoji.count}"
 					name="${emoji.name}"
@@ -157,438 +173,353 @@
 					aria-pressed="${emoji.user_voted ? 'true' : 'false'}"
 					tabindex="0"
 				></button>
-				<div class="ui popup emoji-reaction-popup-container"
-					id="${popupId}"
-					role="tooltip"
-					aria-hidden="true"
-				>
+				<div class="ui popup emoji-reaction-popup-container" id="${popupId}" role="tooltip" aria-hidden="true">
 					<ul class="emoji-reaction-usernames" role="list">${userList}</ul>
 					${moreUsers}
-				</div>
-			`;
-		},
+				</div>`;
+		}
 
-		// Build dropdown item
-		buildDropdownItem: function (emoji, data) {
-			if (emoji.legacy) {
-				return '';
-			}
-			var votedClass = emoji.user_voted ? 'voted' : 'not-voted';
-			var buttonLabel = 'React with ' + emoji.name;
-			if (emoji.user_voted) {
-				buttonLabel += ' (currently selected)';
-			}
-			return `<button class="item emoji-reaction-button ${votedClass}"
+		buildDropdownItem(emoji) {
+			if (emoji.legacy) return '';
+
+			let buttonLabel = `React with ${emoji.name}`;
+			if (emoji.user_voted) buttonLabel += ' (currently selected)';
+
+			return `<button class="item emoji-reaction-button ${votedClass(emoji)}"
 				data-emoji="${emoji.emoji}"
 				name="${emoji.name}"
 				type="button"
 				aria-label="${buttonLabel}"
 				aria-pressed="${emoji.user_voted ? 'true' : 'false'}"
-				tabindex="0"></button>
-			`;
-		},
+				tabindex="0"></button>`;
+		}
 
-		// Initialize UI components (popups)
-		initializeUIComponents: function ($container) {
-			var self = this;
-			var containerId = $container.closest('.emoji-reaction-wrapper').attr('id');
+		// --- UI components (Fomantic UI requires jQuery) ---
+
+		initializeUIComponents(container) {
+			const $container = $(container);
+			const containerId = container.closest('.emoji-reaction-wrapper')?.id;
 
 			$container.find('.emoji-reaction-button-popup').popup({
 				inline: true,
-				addTouchEvents: false, // We'll handle touch manually for longpress
+				addTouchEvents: false,
 				variation: 'inverted',
 				position: 'top right',
 				on: 'hover',
 				hoverable: true,
-				delay: {
-					show: 200,
-					hide: 100
-				},
+				delay: { show: 200, hide: 100 },
 				onShow: function () {
 					$(this).parent().parent().find('.emoji-reaction-button-addnew').popup('hide');
 
-					var $button = $(this);
-					var emoji = $button.data('emoji');
-					var data = self.containers[containerId];
-
-					// Track current open emoji
+					const data = window.EmojiReaction.containers[containerId];
 					if (data) {
-						data.currentOpenEmoji = emoji;
-					}
-
-					if (data && !data.usernames_loaded && !data.usernames_loading) {
-						self.fetchUsernames(containerId);
+						data.currentOpenEmoji = $(this).data('emoji');
+						if (!data.usernames_loaded && !data.usernames_loading) {
+							window.EmojiReaction.fetchUsernames(containerId);
+						}
 					}
 				},
 				onHide: function () {
-					var $button = $(this);
-					var data = self.containers[containerId];
-					if (data && data.currentOpenEmoji === $button.data('emoji')) {
+					const data = window.EmojiReaction.containers[containerId];
+					if (data?.currentOpenEmoji === $(this).data('emoji')) {
 						data.currentOpenEmoji = null;
 					}
-				}
+				},
 			});
 
-			// Initialize add new button popup
-			var $addNewButton = $container.find('.emoji-reaction-button-addnew');
+			const $addNewButton = $container.find('.emoji-reaction-button-addnew');
 			if ($addNewButton.length) {
 				$addNewButton.popup({
 					popup: $container.find('.addnew-popup'),
 					on: 'click',
 					position: 'top right',
-					addTouchEvents: true // Enable touch events for mobile
+					addTouchEvents: true,
 				});
 			}
 
-			// Remove semantic UI classes
-			$container.find('.emoji-reaction-button').removeClass('selected active');
-		},
+			for (const btn of qsa('.emoji-reaction-button', container)) {
+				btn.classList.remove('selected', 'active');
+			}
+		}
 
-		// Set up global event listeners
-		setupEventListeners: function () {
-			var self = this;
-			var longPressTimer;
-			var isLongPress = false;
+		hideAllPopups() {
+			$('.emoji-reaction-button-popup').popup('hide');
+			$('.emoji-reaction-button-addnew').popup('hide');
+		}
 
-			// Handle emoji button clicks in .emoji-reaction-wrapper (all buttons: main and dropdown)
-			$(document).on('click.emoji', '.emoji-reaction-wrapper .emoji-reaction-button', function (e) {
+		// --- Event listeners ---
+
+		setupEventListeners() {
+			let longPressTimer;
+			let isLongPress = false;
+
+			$(document).on('click.emoji', '.emoji-reaction-wrapper .emoji-reaction-button', (e) => {
 				if (isLongPress) {
 					isLongPress = false;
 					return;
 				}
 				e.preventDefault();
 				e.stopPropagation();
-				self.handleEmojiClick($(this));
+				$('.emoji-reaction-button-popup').popup('hide');
+				this.handleEmojiClick(e.currentTarget);
 			});
 
-			// Handle touch for longpress on main buttons
-			$(document).on('touchstart.emoji', '.emoji-reaction-wrapper .emoji-reaction-button-popup', function (e) {
-				var $button = $(this);
+			$(document).on('touchstart.emoji', '.emoji-reaction-wrapper .emoji-reaction-button-popup', (e) => {
+				const target = e.currentTarget;
 				isLongPress = false;
-				longPressTimer = setTimeout(function () {
+				longPressTimer = setTimeout(() => {
 					isLongPress = true;
-					self.handleEmojiPopup($button);
-				}, 500); // 500ms for long press
+					this.handleEmojiPopup(target);
+				}, LONG_PRESS_MS);
 			});
 
-			$(document).on('touchend.emoji touchmove.emoji', '.emoji-reaction-wrapper .emoji-reaction-button-popup', function (e) {
+			$(document).on('touchend.emoji touchmove.emoji', '.emoji-reaction-wrapper .emoji-reaction-button-popup', () => {
 				clearTimeout(longPressTimer);
 			});
 
-			// Handle keyboard navigation
-			$(document).on('keydown.emoji', '.emoji-reaction-wrapper .emoji-reaction-button, .emoji-reaction-button-addnew', function (e) {
-				var $button = $(this);
-
+			$(document).on('keydown.emoji', '.emoji-reaction-wrapper .emoji-reaction-button, .emoji-reaction-button-addnew', (e) => {
 				if (e.key === 'Enter' || e.key === ' ') {
 					e.preventDefault();
 					e.stopPropagation();
-
-					if ($button.hasClass('emoji-reaction-button-addnew')) {
-						self.handleAddNewToggle($button);
+					if (e.currentTarget.classList.contains('emoji-reaction-button-addnew')) {
+						this.handleAddNewToggle(e.currentTarget);
 					} else {
-						// For both main and dropdown buttons, Enter/Space now votes
-						self.handleEmojiClick($button);
+						this.handleEmojiClick(e.currentTarget);
 					}
 				} else if (e.key === 'Escape') {
-					// Close popups on Escape
-					$('.emoji-reaction-button-popup').popup('hide');
-					$('.emoji-reaction-button-addnew').popup('hide');
+					this.hideAllPopups();
 				}
 			});
 
-			// Close popups when clicking outside
-			$(document).on('click.emoji', function (e) {
-				if (!$(e.target).closest('.emoji-reaction-wrapper, .ui.popup').length) {
-					$('.emoji-reaction-button-popup').popup('hide');
-					$('.emoji-reaction-button-addnew').popup('hide');
+			$(document).on('click.emoji', (e) => {
+				if (!e.target.closest('.emoji-reaction-wrapper, .ui.popup')) {
+					this.hideAllPopups();
 				}
 			});
 
-			// Handle window resize
-			var resizeTimeout;
-			$(window).on('resize', function () {
-				clearTimeout(resizeTimeout);
-				resizeTimeout = setTimeout(function () {
-					self.handleResize();
-				}, 150);
-			});
-		},
+			window.addEventListener('resize', debounce(() => {
+				for (const containerId of Object.keys(this.containers)) {
+					this.renderContainer(containerId);
+				}
+			}, RESIZE_DEBOUNCE_MS));
+		}
 
-		// Handle emoji popup (show popup instead of voting)
-		handleEmojiPopup: function ($button) {
-			var $wrapper = $button.closest('.emoji-reaction-wrapper');
-			var containerId = $wrapper.attr('id');
-			var data = this.containers[containerId];
-			var emoji = $button.data('emoji');
+		// --- Interaction handlers ---
 
-			// Close all existing popups first
+		handleEmojiPopup(button) {
+			const wrapper = button.closest('.emoji-reaction-wrapper');
+			const containerId = wrapper.id;
+			const data = this.containers[containerId];
+
 			$('.emoji-reaction-button-popup').popup('hide');
-			$wrapper.find('.emoji-reaction-button-addnew').popup('hide');
-			$button.removeClass('selected active');
+			$(wrapper).find('.emoji-reaction-button-addnew').popup('hide');
+			button.classList.remove('selected', 'active');
 
-			if (!$button.hasClass('emoji-reaction-button-popup')) {
-				return;
-			}
+			if (!button.classList.contains('emoji-reaction-button-popup')) return;
 
-			// Load usernames if not already loaded and not currently loading
 			if (data && !data.usernames_loaded && !data.usernames_loading) {
 				this.fetchUsernames(containerId);
 			} else {
-				// Show the popup for this emoji button
-				$button.popup('show');
+				$(button).popup('show');
 			}
-		},
+		}
 
-		// Fetch usernames via AJAX
-		fetchUsernames: function (containerId) {
-			var data = this.containers[containerId];
-			var self = this;
-
-			data.usernames_loading = true;
-			this.renderContainer(containerId);
-
-			var formData = new FormData();
-			formData.append('action', 'emoji_reaction_ajax_get_usernames');
-			formData.append('object_id', data.object_id);
-			formData.append('object_type', data.object_type);
-			formData.append('nonce', data.nonce);
-
-			fetch(emoji_reaction.ajax_url, {
-				method: 'POST',
-				body: formData,
-				credentials: 'same-origin'
-			})
-				.then(function (response) {
-					return response.json();
-				})
-				.then(function (response) {
-					data.usernames_loading = false;
-					if (response.success && response.data && response.data.state_data) {
-						// Merge fetched usernames into existing state
-						var newState = response.data.state_data;
-						newState.usernames_loaded = true;
-						// Preserve currentOpenEmoji state
-						newState.currentOpenEmoji = data.currentOpenEmoji;
-						self.containers[containerId] = newState;
-						self.renderContainer(containerId);
-					}
-				})
-				.catch(function (error) {
-					console.error("fetchUsernames failed", error);
-					data.usernames_loading = false;
-					self.renderContainer(containerId);
-				});
-		},
-
-		// Handle add new button toggle
-		handleAddNewToggle: function ($button) {
-			var $popup = $button.next('.addnew-popup');
-			var isExpanded = $button.attr('aria-expanded') === 'true';
+		handleAddNewToggle(button) {
+			const $button = $(button);
+			const popup = button.nextElementSibling;
+			const isExpanded = button.getAttribute('aria-expanded') === 'true';
 
 			if (isExpanded) {
 				$button.popup('hide');
-				$button.attr('aria-expanded', 'false');
-				$popup.attr('aria-hidden', 'true');
+				button.setAttribute('aria-expanded', 'false');
+				popup.setAttribute('aria-hidden', 'true');
 			} else {
 				$button.popup('show');
-				$button.attr('aria-expanded', 'true');
-				$popup.attr('aria-hidden', 'false');
-				// Focus first emoji button in popup
-				setTimeout(function () {
-					$popup.find('.emoji-reaction-button').first().focus();
-				}, 100);
+				button.setAttribute('aria-expanded', 'true');
+				popup.setAttribute('aria-hidden', 'false');
+				setTimeout(() => qs('.emoji-reaction-button', popup)?.focus(), 100);
 			}
-		},
+		}
 
-		// Handle emoji button click
-		handleEmojiClick: function ($button) {
-			var $wrapper = $button.closest('.emoji-reaction-wrapper');
-			var $container = $wrapper.find('.emoji-reaction-container');
-			var containerId = $wrapper.attr('id');
-			var data = this.containers[containerId];
-
+		handleEmojiClick(button) {
+			const wrapper = button.closest('.emoji-reaction-wrapper');
+			const containerId = wrapper.id;
+			const data = this.containers[containerId];
 			if (!data) return;
 
-			var emoji = $button.data('emoji');
-			var isVoted = $button.hasClass('voted');
+			const emoji = button.dataset.emoji || $(button).data('emoji');
+			const isVoted = button.classList.contains('voted');
 
-			// Check if user has permission to react (add)
 			if (!isVoted && !data.can_react) {
-				this.showNotification("Sorry, you do not have permission to react to this content.");
+				this.showNotification('Sorry, you do not have permission to react to this content.');
 				return;
 			}
 
-			// Close popups
-			$wrapper.find('.emoji-reaction-button-addnew').popup('hide');
-			$button.removeClass('selected active');
+			$(wrapper).find('.emoji-reaction-button-addnew').popup('hide');
+			button.classList.remove('selected', 'active');
 
-			// Check confirmation for removing when no permission to re-add
-			if (isVoted && !data.can_react) {
-				if (!confirm(emoji_reaction.confirm_remove_no_perm)) {
-					return;
-				}
-			}
+			if (isVoted && !data.can_react && !confirm(emoji_reaction.confirm_remove_no_perm)) return;
+			if (emoji === '👎' && !isVoted && !confirm(emoji_reaction.thumbs_down_alert)) return;
 
-			// Check thumbs down confirmation
-			if (emoji === '👎' && !isVoted) {
-				if (!confirm(emoji_reaction.thumbs_down_alert)) {
-					return;
-				}
-			}
-
-			// Send AJAX request
 			this.sendReaction(containerId, emoji, isVoted);
-		},
+		}
 
-		// Send reaction AJAX request
-		sendReaction: function (containerId, emoji, unlike) {
-			var data = this.containers[containerId];
-			var self = this;
+		// --- AJAX ---
 
-			var formData = new FormData();
-			formData.append('action', 'emoji_reaction_ajax_save_action');
-			formData.append('object_id', data.object_id);
-			formData.append('object_type', data.object_type);
-			formData.append('emoji', emoji);
-			formData.append('unlike', unlike);
-			formData.append('nonce', data.nonce);
+		async fetchUsernames(containerId) {
+			const data = this.containers[containerId];
+			data.usernames_loading = true;
 
-			fetch(emoji_reaction.ajax_url, {
-				method: 'POST',
-				body: formData,
-				credentials: 'same-origin'
-			})
-				.then(function (response) {
-					return response.json();
-				})
-				.then(function (response) {
-					if (response.success && response.data && response.data.state_data) {
-						self.containers[containerId] = response.data.state_data; // Update state and re-render
-						self.renderContainer(containerId);
-
-						if (response?.data?.action_info?.limit_message) { // Handle notifications.
-							self.showNotification(response?.data?.action_info?.limit_message);
-						}
-						self.fireCustomEvent(response.data); // Fire custom event for charts.
-					} else {
-						console.error("emoji_reaction request failed", response);
-						self.showNotification(response.data?.message || "Unable to update reaction. Please try again.");
+			for (const el of this.getContainerElements(containerId)) {
+				for (const ul of qsa('.emoji-reaction-usernames', el)) {
+					if (!ul.querySelector('li') || !ul.querySelector('.loading')) {
+						ul.innerHTML = `<li class="loading">${emoji_reaction.loading}</li>`;
 					}
-				})
-				.catch(function (error) {
-					console.error("emoji_reaction request failed", error);
-					self.showNotification("Unable to update reaction. Please try again.");
-				});
-		},
-
-		// Fire custom event for chart updates
-		fireCustomEvent: function (responseData) {
-			if (responseData.action_info && responseData.action_info.object_type === 'post') {
-				var event = new CustomEvent('emojiReactionChanged', {
-					detail: {
-						postId: responseData.action_info.object_id,
-						objectType: responseData.action_info.object_type,
-						emoji: responseData.action_info.emoji,
-						state: responseData.action_info.state,
-						userId: responseData.action_info.user_id
-					}
-				});
-				window.dispatchEvent(event);
-			}
-		},
-
-		// Show notification
-		showNotification: function (message) {
-			var notificationId = 'emoji-reaction-limit-notification';
-			var $existing = $('#' + notificationId);
-
-			if ($existing.length) {
-				$existing.remove();
-			}
-
-			var $notification = $(`
-				<div id="${notificationId}" class="emoji-reaction-notification">
-					<div class="emoji-reaction-notification-content">
-						<span class="emoji-reaction-notification-icon" aria-disabled>ℹ️</span>
-						<span class="emoji-reaction-notification-text" >${message}</span>
-						<button class="emoji-reaction-notification-close">&times;</button>
-					</div>
-				</div>
-			`);
-
-			if (!$('#toast-container').length) {
-				console.log("no toast container found, appending one")
-				$('body').append('<div id="toast-container" aria-live="polite" ></div>');
-			}
-			$('#toast-container').append($notification);
-
-			$notification.find('.emoji-reaction-notification-close').on('click', function () {
-				$notification.css('animation', 'slideOutToRight 0.3s ease-in');
-				setTimeout(function () { $notification.remove(); }, 300);
-			});
-
-			setTimeout(function () {
-				if ($notification.length && $notification.is(':visible')) {
-					$notification.css('animation', 'slideOutToRight 0.3s ease-in');
-					setTimeout(function () { $notification.remove(); }, 300);
-				}
-			}, 5000);
-		},
-
-		// Handle window resize
-		handleResize: function () {
-			for (var containerId in this.containers) {
-				this.renderContainer(containerId);
-			}
-		},
-
-		// Announce message to screen readers
-		/* announceToScreenReader: function (message) {
-			var $announcer = $('#emoji-reaction-sr-announcer');
-			if (!$announcer.length) {
-				$announcer = $('<div id="emoji-reaction-sr-announcer"  aria-atomic="true" class="sr-only"></div>');
-				$('body').append($announcer);
-
-				// Add screen reader only styles
-				if (!$('#emoji-reaction-sr-styles').length) {
-					$('head').append(`
-						<style id="emoji-reaction-sr-styles">
-							.sr-only {
-								position: absolute !important;
-								width: 1px !important;
-								height: 1px !important;
-								padding: 0 !important;
-								margin: -1px !important;
-								overflow: hidden !important;
-								clip: rect(0, 0, 0, 0) !important;
-								white-space: nowrap !important;
-								border: 0 !important;
-							}
-						</style>
-					`);
 				}
 			}
 
-			// Clear and set new message
-			$announcer.empty();
-			setTimeout(function () {
-				$announcer.text(message);
-			}, 100);
-		} */
-	};
+			try {
+				const result = await postAjax({
+					action: 'emoji_reaction_ajax_get_usernames',
+					object_id: data.object_id,
+					object_type: data.object_type,
+					nonce: data.nonce,
+				});
 
-	// Initialize on DOM ready and window load
-	$(document).ready(function () {
-		window.EmojiReaction.init();
-	});
+				data.usernames_loading = false;
+				if (result.success && result.data?.state_data) {
+					const newState = result.data.state_data;
+					newState.usernames_loaded = true;
+					newState.currentOpenEmoji = data.currentOpenEmoji;
+					this.containers[containerId] = newState;
+					this.updatePopupsContent(containerId);
+				}
+			} catch (error) {
+				console.error('fetchUsernames failed', error);
+				data.usernames_loading = false;
+				for (const el of this.getContainerElements(containerId)) {
+					for (const li of qsa('.emoji-reaction-usernames .loading', el)) {
+						li.remove();
+					}
+				}
+			}
+		}
 
-	$(window).on('load', function () {
-		window.EmojiReaction.init();
-	});
+		updatePopupsContent(containerId) {
+			const data = this.containers[containerId];
+			if (!data) return;
 
-	// Handle new content events
-	window.addEventListener('new-content', function (event) {
-		window.EmojiReaction.init();
-	});
+			for (const container of this.getContainerElements(containerId)) {
+				for (const emoji of data.emojis) {
+					const popup = qs(`#${emojiPopupId(data, emoji.emoji)}`, container);
+					if (!popup) continue;
 
+					const { userList, moreUsers } = this.buildUserListHTML(emoji, data);
+					qs('.emoji-reaction-usernames', popup).innerHTML = userList;
+					qs('p', popup)?.remove();
+					if (moreUsers) {
+						popup.insertAdjacentHTML('beforeend', moreUsers);
+					}
+
+					if (popup.classList.contains('visible')) {
+						const $button = $(container).find(`.emoji-reaction-button-popup[data-emoji="${emoji.emoji}"]`);
+						if ($button.length) $button.popup('refresh');
+					}
+				}
+			}
+		}
+
+		async sendReaction(containerId, emoji, unlike) {
+			const data = this.containers[containerId];
+
+			try {
+				const result = await postAjax({
+					action: 'emoji_reaction_ajax_save_action',
+					object_id: data.object_id,
+					object_type: data.object_type,
+					emoji,
+					unlike,
+					nonce: data.nonce,
+				});
+
+				if (result.success && result.data?.state_data) {
+					this.containers[containerId] = result.data.state_data;
+					this.renderContainer(containerId);
+
+					const limitMessage = result.data.action_info?.limit_message;
+					if (limitMessage) this.showNotification(limitMessage);
+
+					this.fireCustomEvent(result.data);
+				} else {
+					console.error('emoji_reaction request failed', result);
+					this.showNotification(result.data?.message || 'Unable to update reaction. Please try again.');
+				}
+			} catch (error) {
+				console.error('emoji_reaction request failed', error);
+				this.showNotification('Unable to update reaction. Please try again.');
+			}
+		}
+
+		fireCustomEvent(responseData) {
+			const info = responseData.action_info;
+			if (info?.object_type === 'post') {
+				window.dispatchEvent(
+					new CustomEvent('emojiReactionChanged', {
+						detail: {
+							postId: info.object_id,
+							objectType: info.object_type,
+							emoji: info.emoji,
+							state: info.state,
+							userId: info.user_id,
+						},
+					})
+				);
+			}
+		}
+
+		// --- Notifications ---
+
+		dismissNotification(el) {
+			el.style.animation = 'slideOutToRight 0.3s ease-in';
+			setTimeout(() => el.remove(), DISMISS_ANIMATION_MS);
+		}
+
+		showNotification(message) {
+			document.getElementById(NOTIFICATION_ID)?.remove();
+
+			const notification = document.createElement('div');
+			notification.id = NOTIFICATION_ID;
+			notification.className = 'emoji-reaction-notification';
+			notification.innerHTML = `
+				<div class="emoji-reaction-notification-content">
+					<span class="emoji-reaction-notification-icon" aria-disabled>ℹ️</span>
+					<span class="emoji-reaction-notification-text">${message}</span>
+					<button class="emoji-reaction-notification-close">&times;</button>
+				</div>`;
+
+			let toast = document.getElementById(TOAST_CONTAINER_ID);
+			if (!toast) {
+				toast = document.createElement('div');
+				toast.id = TOAST_CONTAINER_ID;
+				toast.setAttribute('aria-live', 'polite');
+				document.body.appendChild(toast);
+			}
+			toast.appendChild(notification);
+
+			qs('.emoji-reaction-notification-close', notification)
+				.addEventListener('click', () => this.dismissNotification(notification));
+
+			setTimeout(() => {
+				if (notification.isConnected) {
+					this.dismissNotification(notification);
+				}
+			}, NOTIFICATION_TIMEOUT_MS);
+		}
+	}
+
+	window.EmojiReaction = new EmojiReactionManager();
+
+	$(() => window.EmojiReaction.init());
+	$(window).on('load', () => window.EmojiReaction.init());
+	window.addEventListener('new-content', () => window.EmojiReaction.init());
 })(jQuery);

@@ -23,7 +23,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Currently plugin version.
  */
-define( 'EMOJI_REACTION_VERSION', '0.6.0' );
+define( 'EMOJI_REACTION_VERSION', '0.6.1' );
 
 /**
  * The code that runs during plugin deactivation.
