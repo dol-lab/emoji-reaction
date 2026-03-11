@@ -240,20 +240,6 @@ class Emoji_Reaction_Public {
 			);
 		}
 
-		// Sort emojis: user voted first, then by count (descending), then by original order
-		usort(
-			$emoji_data,
-			function ( $a, $b ) {
-				if ( $a['user_voted'] && ! $b['user_voted'] ) {
-					return -1;
-				} elseif ( ! $a['user_voted'] && $b['user_voted'] ) {
-					return 1;
-				} else {
-					return $b['count'] - $a['count'];
-				}
-			}
-		);
-
 		return array(
 			'object_id'       => $object_id,
 			'object_type'     => $object_type,
@@ -370,7 +356,7 @@ class Emoji_Reaction_Public {
 		// Validate emoji (check if it's in allowed list, unless we are unliking)
 		$allowed_emojis = array_column( apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() ), 0 );
 		if ( 'true' !== $unlike && ! in_array( $emoji, $allowed_emojis, true ) ) {
-			wp_send_json_error( array( 'message' => 'Invalid emoji.' ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'This emoji is no longer available. Use the 👍+ button to see all available reactions.', 'emoji-reaction' ) ), 400 );
 		}
 
 		// Check user permissions for the object (if NOT unliking)
