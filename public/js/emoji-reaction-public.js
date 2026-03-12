@@ -47,6 +47,7 @@
 		constructor() {
 			this.containers = {};
 			this.eventsSetup = false;
+			this.longPressPopup = false;
 		}
 
 		init() {
@@ -220,6 +221,9 @@
 					}
 				},
 				onHide: function () {
+					if (window.EmojiReaction.longPressPopup) {
+						return false;
+					}
 					const data = window.EmojiReaction.containers[containerId];
 					if (data?.currentOpenEmoji === $(this).data('emoji')) {
 						data.currentOpenEmoji = null;
@@ -243,6 +247,7 @@
 		}
 
 		hideAllPopups() {
+			this.longPressPopup = false;
 			$('.emoji-reaction-button-popup').popup('hide');
 			$('.emoji-reaction-button-addnew').popup('hide');
 		}
@@ -311,11 +316,17 @@
 			const containerId = wrapper.id;
 			const data = this.containers[containerId];
 
+			this.longPressPopup = false;
 			$('.emoji-reaction-button-popup').popup('hide');
 			$(wrapper).find('.emoji-reaction-button-addnew').popup('hide');
 			button.classList.remove('selected', 'active');
 
 			if (!button.classList.contains('emoji-reaction-button-popup')) return;
+
+			if (data) {
+				data.currentOpenEmoji = $(button).data('emoji');
+			}
+			this.longPressPopup = true;
 
 			if (data && !data.usernames_loaded && !data.usernames_loading) {
 				this.fetchUsernames(containerId);
@@ -393,6 +404,16 @@
 					newState.currentOpenEmoji = data.currentOpenEmoji;
 					this.containers[containerId] = newState;
 					this.updatePopupsContent(containerId);
+
+					if (newState.currentOpenEmoji) {
+						for (const el of this.getContainerElements(containerId)) {
+							const $btn = $(el).find(`.emoji-reaction-button-popup[data-emoji="${newState.currentOpenEmoji}"]`);
+							if ($btn.length) {
+								$btn.popup('show');
+								break;
+							}
+						}
+					}
 				}
 			} catch (error) {
 				console.error('fetchUsernames failed', error);
