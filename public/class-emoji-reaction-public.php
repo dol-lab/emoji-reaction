@@ -105,7 +105,7 @@ class Emoji_Reaction_Public {
 				'ajax_url'               => admin_url( 'admin-ajax.php' ),
 				'thumbs_down_alert'      => __( "We love constructive feedback! How about a comment on what can be improved instead? Pro tip: start with something positive 😉 \nStill want to continue?", 'emoji-reaction' ),
 				'confirm_remove_no_perm' => __( "Are you sure you want to remove your reaction? You won't be able to add it back later.", 'emoji-reaction' ),
-				'loading'                => __( "Loading...", 'emoji-reaction' ),
+				'loading'                => __( 'Loading...', 'emoji-reaction' ),
 			)
 		);
 		wp_localize_script( $this->plugin_name . '-chart-js', 'emoji_reaction_chart', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
@@ -166,78 +166,47 @@ class Emoji_Reaction_Public {
 	 */
 	private function get_state_data( $object_id, $object_type, $args, $include_usernames = false ) {
 		$likes           = $this->get_reactions( $object_id, $object_type );
-		$emojis          = $args['emojis'];
+		$emojis          = is_array( $args['emojis'] ) ? $args['emojis'] : array();
 		$current_user_id = $args['current_user_id'];
 		$max_usernames   = $args['max_usernames'];
 
-		// Process each emoji
+		// Pre-fetch all usernames in one query if needed
+		$user_name_map = array();
+		if ( $include_usernames ) {
+			$user_name_map = $this->get_user_names_bulk( $likes, $max_usernames );
+		}
+
+		// Process each configured emoji
 		$emoji_data = array();
 		foreach ( $emojis as $emoji ) {
-			$count      = 0;
-			$user_ids   = array();
-			$user_voted = false;
-
-			if ( ! empty( $likes ) && array_key_exists( $emoji[0], $likes ) ) {
-				$user_ids   = array_values( $likes[ $emoji[0] ] );
-				$count      = count( $user_ids );
-				$user_voted = in_array( $current_user_id, $user_ids );
-			}
-
-			// Get user names (limited)
-			$user_names = array();
-			if ( $include_usernames ) {
-				$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
-				foreach ( $user_ids_limited as $user_id ) {
-					$user_names[] = array(
-						'id'   => $user_id,
-						'name' => $this->get_user_name( $user_id ),
-					);
-				}
-			}
-
-			$emoji_data[] = array(
-				'emoji'       => $emoji[0],
-				'name'        => $emoji[1],
-				'count'       => $count,
-				'user_voted'  => $user_voted,
-				'user_names'  => $user_names,
-				'total_users' => count( $user_ids ),
+			$user_ids     = isset( $likes[ $emoji[0] ] ) ? array_values( $likes[ $emoji[0] ] ) : array();
+			$emoji_data[] = $this->build_emoji_entry(
+				$emoji[0],
+				$emoji[1],
+				$user_ids,
+				$current_user_id,
+				$max_usernames,
+				$user_name_map
 			);
 		}
 
-		// Show any reactions that exist in the DB but are no longer in the active emoji list
+		// Show legacy reactions that exist in the DB but are no longer in the active emoji list
 		$processed_emojis = array_column( $emojis, 0 );
 		foreach ( $likes as $emoji_char => $user_ids_map ) {
 			if ( in_array( $emoji_char, $processed_emojis, true ) ) {
 				continue;
 			}
 
-			$user_ids = array_values( $user_ids_map );
-			$count    = count( $user_ids );
-			if ( 0 === $count ) {
-				continue;
-			}
-
-			$user_names = array();
-			if ( $include_usernames ) {
-				$user_ids_limited = array_slice( $user_ids, 0, $max_usernames );
-				foreach ( $user_ids_limited as $user_id ) {
-					$user_names[] = array(
-						'id'   => $user_id,
-						'name' => $this->get_user_name( $user_id ),
-					);
-				}
-			}
-
-			$emoji_data[] = array(
-				'emoji'       => $emoji_char,
-				'name'        => $emoji_char,
-				'count'       => $count,
-				'user_voted'  => in_array( $current_user_id, $user_ids, true ),
-				'user_names'  => $user_names,
-				'total_users' => count( $user_ids ),
-				'legacy'      => true,
+			$entry           = $this->build_emoji_entry(
+				$emoji_char,
+				$emoji_char,
+				array_values( $user_ids_map ),
+				$current_user_id,
+				$max_usernames,
+				$user_name_map
 			);
+			$entry['legacy'] = true;
+			$emoji_data[]    = $entry;
 		}
 
 		return array(
@@ -462,31 +431,68 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
+	 * Build a single emoji entry for state data.
+	 *
+	 * @param string $emoji_char      The emoji character.
+	 * @param string $emoji_name      Display name for the emoji.
+	 * @param int[]  $user_ids        User IDs who reacted with this emoji.
+	 * @param int    $current_user_id Current user's ID.
+	 * @param int    $max_usernames   Max usernames to include.
+	 * @param array  $user_name_map    Pre-fetched map of user ID => display name (empty array to skip).
+	 *
+	 * @return array Emoji entry data.
+	 */
+	private function build_emoji_entry( $emoji_char, $emoji_name, $user_ids, $current_user_id, $max_usernames, $user_name_map ) {
+		$user_names = array();
+		if ( ! empty( $user_name_map ) ) {
+			foreach ( array_slice( $user_ids, 0, $max_usernames ) as $user_id ) {
+				$user_names[] = array(
+					'id'   => $user_id,
+					'name' => $user_name_map[ $user_id ] ?? __( 'Anonymous', 'emoji-reaction' ),
+				);
+			}
+		}
+
+		return array(
+			'emoji'       => $emoji_char,
+			'name'        => $emoji_name,
+			'count'       => count( $user_ids ),
+			'user_voted'  => in_array( $current_user_id, $user_ids ),
+			'user_names'  => $user_names,
+			'total_users' => count( $user_ids ),
+		);
+	}
+
+	/**
 	 * Get user IDs associated to an emoji out of post or comment meta.
 	 *
 	 *
 	 * @param   int    $object_id      Post or comment id.
 	 * @param   string $object_type    Type of object. Accepts 'post' or 'comment'.
 	 *
-	 * @return  array|bool  Array of user IDs associated to emojis.
+	 * @return  array  Array of user IDs associated to emojis.
 	 */
-	private function get_reactions( $object_id, $object_type ) {
-		$likes = array();
-
-		if ( $object_type === 'comment' ) {
+	private function get_reactions( $object_id, $object_type ): array {
+		if ( 'comment' === $object_type ) {
 			$likes = get_comment_meta( $object_id, $this->meta_key, true );
 		} else {
 			$likes = get_post_meta( $object_id, $this->meta_key, true );
 		}
 
-		if ( ! empty( $likes ) ) {
-			foreach ( $likes as $key => $emoji_likes ) {
-				krsort( $emoji_likes );
-				$likes[ $key ] = $emoji_likes;
+		if ( ! is_array( $likes ) ) {
+			return array();
+		}
+
+		// Normalize: keep only array entries, sort each by timestamp descending.
+		$normalized = array();
+		foreach ( $likes as $emoji => $user_ids ) {
+			if ( is_array( $user_ids ) && ! empty( $user_ids ) ) {
+				krsort( $user_ids );
+				$normalized[ $emoji ] = $user_ids;
 			}
 		}
 
-		return $likes;
+		return $normalized;
 	}
 
 	/**
@@ -508,11 +514,11 @@ class Emoji_Reaction_Public {
 		// Ensure unique timestamp to prevent overwriting reactions that happen at the same second.
 		if ( ! empty( $likes ) && isset( $likes[ $emoji ] ) ) {
 			while ( array_key_exists( $time, $likes[ $emoji ] ) ) {
-				$time++;
+				++$time;
 			}
 		}
 
-		if ( $emoji === '' ) {
+		if ( empty( $emoji ) ) {
 			return false;
 		}
 
@@ -597,15 +603,44 @@ class Emoji_Reaction_Public {
 	public function get_reaction_count( $likes ) {
 		$count = 0;
 
-		if ( ! empty( $likes ) ) {
-			foreach ( $likes as $emoji => $like ) {
-				if ( $emoji !== '' ) {
-					$count += sizeof( $like );
-				}
+		foreach ( $likes as $emoji => $like ) {
+			if ( ! empty( $emoji ) ) {
+				$count += count( $like );
 			}
 		}
 
 		return $count;
+	}
+
+	/**
+	 * Get display names for all users across all emoji reactions in one query.
+	 *
+	 * @param array $likes           All reactions keyed by emoji => [ timestamp => user_id ].
+	 * @param int   $max_per_emoji   Max usernames to resolve per emoji.
+	 *
+	 * @return array Map of user_id => display_name.
+	 */
+	private function get_user_names_bulk( $likes, $max_per_emoji ) {
+		// Collect unique user IDs (only those that will actually be displayed)
+		$user_ids = array();
+		foreach ( $likes as $emoji_user_ids ) {
+			foreach ( array_slice( array_values( $emoji_user_ids ), 0, $max_per_emoji ) as $uid ) {
+				$user_ids[ $uid ] = true;
+			}
+		}
+
+		if ( empty( $user_ids ) ) {
+			return array();
+		}
+
+		$users = get_users( array( 'include' => array_keys( $user_ids ), 'fields' => array( 'ID', 'display_name' ) ) );
+
+		$map = array();
+		foreach ( $users as $user ) {
+			$map[ (int) $user->ID ] = sanitize_text_field( $user->display_name );
+		}
+
+		return $map;
 	}
 
 	/**
@@ -637,11 +672,9 @@ class Emoji_Reaction_Public {
 	private function get_user_reaction_count( $likes, $user_id ) {
 		$count = 0;
 
-		if ( ! empty( $likes ) ) {
-			foreach ( $likes as $emoji => $emoji_likes ) {
-				if ( $emoji !== '' && in_array( $user_id, $emoji_likes ) ) {
-					++$count;
-				}
+		foreach ( $likes as $emoji => $emoji_likes ) {
+			if ( ! empty( $emoji ) && in_array( $user_id, $emoji_likes ) ) {
+				++$count;
 			}
 		}
 
@@ -658,30 +691,24 @@ class Emoji_Reaction_Public {
 	 * @return  array|null        Information about the removed reaction or null if none found.
 	 */
 	private function remove_oldest_user_reaction( &$likes, $user_id ) {
-		$oldest_timestamp     = null;
-		$oldest_emoji         = null;
-		$oldest_timestamp_key = null;
+		$oldest_timestamp = null;
+		$oldest_emoji     = null;
 
 		// Find the oldest reaction by this user
-		if ( ! empty( $likes ) ) {
-			foreach ( $likes as $emoji => $emoji_likes ) {
-				if ( $emoji !== '' ) {
-					foreach ( $emoji_likes as $timestamp => $uid ) {
-						if ( $uid === $user_id ) {
-							if ( $oldest_timestamp === null || $timestamp < $oldest_timestamp ) {
-									$oldest_timestamp     = $timestamp;
-									$oldest_emoji         = $emoji;
-									$oldest_timestamp_key = $timestamp;
-							}
-						}
+		foreach ( $likes as $emoji => $emoji_likes ) {
+			if ( ! empty( $emoji ) ) {
+				foreach ( $emoji_likes as $timestamp => $uid ) {
+					if ( $uid === $user_id && ( null === $oldest_timestamp || $timestamp < $oldest_timestamp ) ) {
+						$oldest_timestamp = $timestamp;
+						$oldest_emoji     = $emoji;
 					}
 				}
 			}
 		}
 
 		// Remove the oldest reaction if found
-		if ( $oldest_emoji && $oldest_timestamp_key ) {
-			unset( $likes[ $oldest_emoji ][ $oldest_timestamp_key ] );
+		if ( null !== $oldest_emoji ) {
+			unset( $likes[ $oldest_emoji ][ $oldest_timestamp ] );
 
 			// Clean up empty arrays
 			if ( empty( $likes[ $oldest_emoji ] ) ) {
