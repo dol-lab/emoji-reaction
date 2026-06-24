@@ -89,7 +89,7 @@ class Emoji_Reaction_Public {
 
 		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-popup' ), $js_version, false );
 
-		// Enqueue Chart.js from CDN
+		// Enqueue Chart.js.
 		wp_enqueue_script( 'chart-js', plugin_dir_url( __FILE__ ) . 'lib/chart.umd.min.js', array(), '4.4.1', true );
 
 		// Enqueue chart functionality
