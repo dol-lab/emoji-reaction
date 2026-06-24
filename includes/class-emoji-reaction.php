@@ -69,6 +69,7 @@ class Emoji_Reaction {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		$this->define_privacy_hooks();
 	}
 
 	/**
@@ -115,6 +116,11 @@ class Emoji_Reaction {
 		 * The class responsible for chart functionality.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-chart.php';
+
+		/**
+		 * The class responsible for erasing a deleted user's reactions (GDPR Art. 17).
+		 */
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-privacy.php';
 
 		$this->loader = new Emoji_Reaction_Loader();
 	}
@@ -177,6 +183,20 @@ class Emoji_Reaction {
 		$this->loader->add_action( 'emoji_reaction_display_buttons', $plugin_public, 'display_buttons' );
 		$this->loader->add_filter( 'emoji_reaction_emojis', $this, 'get_default_emojis' );
 		$this->loader->add_filter( 'emoji_reaction_max_reactions_per_user', $this, 'get_default_max_reactions_per_user' );
+	}
+
+	/**
+	 * Register the hooks that erase a deleted user's reactions (GDPR Art. 17).
+	 *
+	 * @access   private
+	 */
+	private function define_privacy_hooks(): void {
+
+		$plugin_privacy = new Emoji_Reaction_Privacy( $this->get_plugin_name() );
+
+		// Capture the user's blogs before deletion unlinks them, then purge.
+		$this->loader->add_action( 'wpmu_delete_user', $plugin_privacy, 'capture_user_blogs' );
+		$this->loader->add_action( 'deleted_user', $plugin_privacy, 'purge_deleted_user' );
 	}
 
 	/**

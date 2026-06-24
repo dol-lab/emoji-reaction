@@ -40,7 +40,7 @@ register_deactivation_hook( __FILE__, 'deactivate_emoji_reaction' );
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reaction.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-emoji-reaction.php';
 
 /** The template tags accessible for public use */
 require_once plugin_dir_path( __FILE__ ) . 'public/emoji-reaction-public-functions.php';
