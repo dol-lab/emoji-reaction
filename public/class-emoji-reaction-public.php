@@ -63,10 +63,7 @@ class Emoji_Reaction_Public {
 		if ( ! is_user_logged_in() ) {
 			return; // return if user is not logged in
 		}
-		wp_enqueue_style( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.css', array(), '2.9.4' );
-		wp_enqueue_style( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.css', array(), '2.9.4' );
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->version, 'all' );
-		wp_enqueue_style( $this->plugin_name . '-chart', plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-chart.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/emoji-reaction-public.css', array(), $this->asset_version( 'css/emoji-reaction-public.css' ), 'all' );
 	}
 
 	/**
@@ -77,38 +74,53 @@ class Emoji_Reaction_Public {
 		if ( ! is_user_logged_in() ) {
 			return; // return if user is not logged in
 		}
-		wp_enqueue_script( 'fomantic-ui-transition', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-transition/transition.min.js', array( 'jquery' ), '2.9.4', false );
-		wp_enqueue_script( 'fomantic-ui-popup', plugin_dir_url( __FILE__ ) . 'lib/fomantic-ui-popup/popup.min.js', array( 'jquery' ), '2.9.4', false );
+		$handle = $this->plugin_name . '-public-js';
 
-		// Use filemtime for versioning in development & local environments
-		$js_file_path       = plugin_dir_path( __FILE__ ) . 'js/emoji-reaction-public.js';
-		$is_dev_environment = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ||
-						'development' === wp_get_environment_type() ||
-						'local' === wp_get_environment_type();
-		$js_version         = $is_dev_environment ? filemtime( $js_file_path ) : $this->version;
-
-		wp_enqueue_script( $this->plugin_name . '-public-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array( 'jquery', 'fomantic-ui-transition', 'fomantic-ui-popup' ), $js_version, false );
-
-		// Enqueue Chart.js.
-		wp_enqueue_script( 'chart-js', plugin_dir_url( __FILE__ ) . 'lib/chart.umd.min.js', array(), '4.4.1', true );
-
-		// Enqueue chart functionality
-		wp_enqueue_script( $this->plugin_name . '-chart-js', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart.js', array( 'chart-js' ), $js_version, true );
-
-		// Enqueue chart messages handling
-		wp_enqueue_script( $this->plugin_name . '-chart-messages', plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-chart-messages.js', array(), $js_version, true );
+		wp_enqueue_script( $handle, plugin_dir_url( __FILE__ ) . 'js/emoji-reaction-public.js', array(), $this->asset_version( 'js/emoji-reaction-public.js' ), false );
 
 		wp_localize_script(
-			$this->plugin_name . '-public-js',
+			$handle,
 			'emoji_reaction',
 			array(
 				'ajax_url'               => admin_url( 'admin-ajax.php' ),
 				'thumbs_down_alert'      => __( "We love constructive feedback! How about a comment on what can be improved instead? Pro tip: start with something positive 😉 \nStill want to continue?", 'emoji-reaction' ),
 				'confirm_remove_no_perm' => __( "Are you sure you want to remove your reaction? You won't be able to add it back later.", 'emoji-reaction' ),
 				'loading'                => __( 'Loading...', 'emoji-reaction' ),
+				'no_permission'          => __( 'Sorry, you do not have permission to react to this content.', 'emoji-reaction' ),
+				'request_failed'         => __( 'Unable to update reaction. Please try again.', 'emoji-reaction' ),
+				/* translators: %d: how many more people reacted than are listed. */
+				'and_more'               => __( 'And %d more ...', 'emoji-reaction' ),
+				'add_reaction'           => __( 'Add new reaction', 'emoji-reaction' ),
+				'choose_reaction'        => __( 'Choose reaction', 'emoji-reaction' ),
+				/* translators: 1: name of the emoji, 2: how many people reacted with it. */
+				'button_label'           => __( '%1$s (%2$d)', 'emoji-reaction' ),
+				'you_reacted'            => __( 'You reacted with this', 'emoji-reaction' ),
+				/* translators: %s: emoji name. */
+				'react_with'             => __( 'React with %s', 'emoji-reaction' ),
+				'currently_selected'     => __( 'currently selected', 'emoji-reaction' ),
 			)
 		);
-		wp_localize_script( $this->plugin_name . '-chart-js', 'emoji_reaction_chart', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+	}
+
+	/**
+	 * Version for an asset: its modification time while developing, the plugin version otherwise.
+	 *
+	 * @param string $relative_path Path of the asset, relative to this directory.
+	 *
+	 * @return string Version to append to the asset's URL.
+	 */
+	private function asset_version( string $relative_path ): string {
+		$is_dev_environment = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ||
+						'development' === wp_get_environment_type() ||
+						'local' === wp_get_environment_type();
+
+		if ( ! $is_dev_environment ) {
+			return $this->version;
+		}
+
+		$mtime = @filemtime( plugin_dir_path( __FILE__ ) . $relative_path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a missing file simply falls back to the version.
+
+		return $mtime ? (string) $mtime : $this->version;
 	}
 
 	/**

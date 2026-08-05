@@ -113,11 +113,6 @@ class Emoji_Reaction {
 		require_once plugin_dir_path( __DIR__ ) . 'public/class-emoji-reaction-public.php';
 
 		/**
-		 * The class responsible for chart functionality.
-		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-chart.php';
-
-		/**
 		 * The class responsible for erasing a deleted user's reactions (GDPR Art. 17).
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-emoji-reaction-privacy.php';
@@ -163,7 +158,6 @@ class Emoji_Reaction {
 	private function define_public_hooks(): void {
 
 		$plugin_public = new Emoji_Reaction_Public( $this->get_plugin_name(), $this->get_version() );
-		$plugin_chart  = new Emoji_Reaction_Chart( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
@@ -183,6 +177,19 @@ class Emoji_Reaction {
 		$this->loader->add_action( 'emoji_reaction_display_buttons', $plugin_public, 'display_buttons' );
 		$this->loader->add_filter( 'emoji_reaction_emojis', $this, 'get_default_emojis' );
 		$this->loader->add_filter( 'emoji_reaction_max_reactions_per_user', $this, 'get_default_max_reactions_per_user' );
+
+		$this->loader->add_action( 'init', $this, 'register_legacy_chart_shortcode' );
+	}
+
+	/**
+	 * Swallow the shortcode of the chart feature that was removed in 0.7.0.
+	 *
+	 * Posts written while it existed still hold `[emoji_reaction_chart]`, and an
+	 * unregistered shortcode is printed to the page as its own source. There is
+	 * nothing left to draw, so it draws nothing.
+	 */
+	public function register_legacy_chart_shortcode(): void {
+		add_shortcode( 'emoji_reaction_chart', '__return_empty_string' );
 	}
 
 	/**

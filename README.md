@@ -2,7 +2,7 @@
 
 A Wordpress plugin which allows emoji reactions on posts and comments by logged in users.
 
-- Version: 0.3.4
+- Version: 0.7.0
 - WordPress Version: 4.2 or higher
 - Tested up to: 5.9.3
 - License: GPL-2.0+
@@ -44,21 +44,17 @@ Be aware: if you remove an emoji, the saved likes according to this emoji will r
 
 ---
 
-## Chart Feature
+## Dependencies
 
-The plugin includes chart functionality to visualize emoji reactions:
+None. The buttons, the list of who reacted and the emoji picker are plain JavaScript
+(no jQuery, no UI framework), using the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API)
+for the two popups. Where that is missing, the buttons keep working and only the popups stay closed.
 
-**Shortcode**: `[emoji_reaction_chart]` - Display charts with optional parameters:
-- `type`: "bar" or "donut" (default: "donut")
-- `post_id`: Specific post ID (default: current post)
+---
 
-**Gutenberg Block**: "Emoji Reaction Chart" block available in the editor
+## Removed in 0.7.0: charts
 
-**Add Chart Link**: Use `emoji_reaction_get_add_chart_link($post_id)` to generate secure links that add chart blocks to posts (requires edit permissions).
-
-Example usage:
-```
-[emoji_reaction_chart type="bar" post_id="123"]
-```
-
-Charts use Chart.js and load data asynchronously. Both shortcode and Gutenberg block are responsive and work on mobile devices.
+The chart feature (the `[emoji_reaction_chart]` shortcode, the `emoji-reaction/chart` block,
+`emoji_reaction_get_add_chart_link()` and the bundled Chart.js) has been removed.
+Posts that still contain the block render nothing for it; a leftover shortcode is stripped
+so it does not show up as text.
