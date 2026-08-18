@@ -262,6 +262,10 @@ class Emoji_Reaction_Public {
 	 * @return  void
 	 */
 	public function emoji_reaction_ajax_get_usernames() {
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'You must be logged in to view reactions.' ), 401 );
+		}
+
 		// Check if required POST data exists
 		if ( ! isset( $_POST['nonce'], $_POST['object_id'], $_POST['object_type'] ) ) {
 			wp_send_json_error( array( 'message' => 'Missing required data.' ), 400 );
@@ -281,7 +285,7 @@ class Emoji_Reaction_Public {
 
 		// Check user permissions
 		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
-			// wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
+			wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
 		}
 
 		$default_args                    = $this->get_default_args();
@@ -411,6 +415,10 @@ class Emoji_Reaction_Public {
 	 * @return  bool   True if user can react, false otherwise.
 	 */
 	private function user_can_react_to_object( $object_id, $object_type ) {
+		if ( ! is_user_logged_in() ) {
+			return false;
+		}
+
 		if ( 'comment' === $object_type ) {
 			$comment = get_comment( $object_id );
 			if ( ! $comment ) {
@@ -429,17 +437,20 @@ class Emoji_Reaction_Public {
 				return false;
 			}
 
-			// Check if user can read the post (handles private posts properly)
-			return current_user_can( 'read_post', $post_id );
+			$object_id = $post_id;
 		} else {
 			$post = get_post( $object_id );
 			if ( ! $post ) {
 				return false; // Post doesn't exist
 			}
-
-			// Check if user can read the post (handles private posts properly)
-			return current_user_can( 'read_post', $object_id );
 		}
+
+		if ( post_password_required( $post ) ) {
+			return false;
+		}
+
+		// Check if user can read the post (handles private posts properly).
+		return current_user_can( 'read_post', $object_id );
 	}
 
 	/**
