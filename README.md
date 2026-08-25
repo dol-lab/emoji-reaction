@@ -52,9 +52,25 @@ for the two popups. Where that is missing, the buttons keep working and only the
 
 ---
 
-## Removed in 0.7.0: charts
+## Notes
 
-The chart feature (the `[emoji_reaction_chart]` shortcode, the `emoji-reaction/chart` block,
-`emoji_reaction_get_add_chart_link()` and the bundled Chart.js) has been removed.
-Posts that still contain the block render nothing for it; a leftover shortcode is stripped
-so it does not show up as text.
+### One popup node per page, not one per button
+
+The "who reacted" tooltip and the emoji picker are two single nodes appended to `<body>`, both
+`popover="manual"`, placed by hand above the anchor button with their right edges aligned, and closed
+on outside click, Escape, scroll or resize. One node each is deliberate: the same post is rendered more
+than once on some pages, so per-container popups collided on their ids.
+
+The popups use `data-react-aria-top-layer` so they remain interactive when opened from a React Aria
+modal.
+
+Hooks for styling and behaviour: `.emoji-reaction-popup`, `#emoji-reaction-names-popup`,
+`#emoji-reaction-picker-popup`. Strings the JavaScript shows come from
+`wp_localize_script( …, 'emoji_reaction', … )`. The `.inverted` class identifies the tooltip.
+
+### Logging goes through `emoji_reaction_log`
+
+The privacy cleanup (reactions of a deleted user) is the only thing that logs. It fires
+`emoji_reaction_log` with `( $level, $message, $source )` — `$level` being a PSR-3 level — and falls
+back to `error_log()` while nothing is hooked. The plugin knows no logger of its own, so a host with
+one hooks that action.

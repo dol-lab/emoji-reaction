@@ -213,17 +213,28 @@ class Emoji_Reaction_Privacy {
 	}
 
 	/**
-	 * Log through spaces-core if available, falling back to error_log().
+	 * Log a developer-facing message.
+	 *
+	 * Fires `emoji_reaction_log` so a host with its own logger can take the line; nothing
+	 * hooked means nothing would see it, so those lines go to error_log() instead. The
+	 * plugin knows no logger but PHP's own.
 	 *
 	 * @param string $level   PSR-3 log level.
 	 * @param string $message The message to log.
 	 * @return void
 	 */
 	private function log( string $level, string $message ): void {
-		if ( function_exists( 'spaces_log' ) ) {
-			spaces_log( $level, $message, array( '_source' => 'emoji-reaction' ) );
-		} else {
-			error_log( "[emoji-reaction] {$level}: {$message}" ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( has_action( 'emoji_reaction_log' ) ) {
+			/**
+			 * Fires for every developer-facing log line of this plugin.
+			 *
+			 * @param string $level   PSR-3 log level.
+			 * @param string $message The message to log.
+			 * @param string $source  Caller id.
+			 */
+			do_action( 'emoji_reaction_log', $level, $message, 'emoji-reaction' );
+			return;
 		}
+		error_log( "[emoji-reaction] {$level}: {$message}" ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	}
 }
