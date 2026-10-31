@@ -98,6 +98,7 @@ class Emoji_Reaction_Public {
 				/* translators: %s: emoji name. */
 				'react_with'             => __( 'React with %s', 'emoji-reaction' ),
 				'currently_selected'     => __( 'currently selected', 'emoji-reaction' ),
+				'page'                   => $this->get_page_state(),
 			)
 		);
 	}
@@ -163,7 +164,60 @@ class Emoji_Reaction_Public {
 		$state_data = $this->get_state_data( $args['ID'], $args['type'], $args );
 
 		// Render simplified container with state data
-		$this->render_simple_display( $state_data );
+		$this->render_simple_display( $this->compact_state( $state_data, $args, $defaults ) );
+	}
+
+	/**
+	 * The state of one set of buttons, without what the page already has.
+	 *
+	 * A page shows many sets, and the emoji list, nonce and user are the same in each: they go out
+	 * once in `emoji_reaction.page` and the script rebuilds the full state (`expandState()`). Only
+	 * reactions with a count are listed; settings are repeated only where `$args` override them.
+	 *
+	 * @param array $state_data Complete state data, see get_state_data().
+	 * @param array $args       Arguments the buttons were rendered with.
+	 * @param array $defaults   Default arguments, as in `emoji_reaction.page`.
+	 *
+	 * @return array Compact state data.
+	 */
+	private function compact_state( array $state_data, array $args, array $defaults ): array {
+		$compact = array(
+			'object_id'   => $state_data['object_id'],
+			'object_type' => $state_data['object_type'],
+			'align'       => $state_data['align'],
+			'can_react'   => $state_data['can_react'],
+			'counts'      => (object) array(),
+			'voted'       => array(),
+		);
+		foreach ( $state_data['emojis'] as $emoji ) {
+			if ( $emoji['count'] > 0 ) {
+				$compact['counts']->{$emoji['emoji']} = $emoji['count'];
+			}
+			if ( $emoji['user_voted'] ) {
+				$compact['voted'][] = $emoji['emoji'];
+			}
+		}
+		foreach ( array( 'emojis', 'nonce', 'max_usernames', 'current_user_id' ) as $key ) {
+			if ( $args[ $key ] !== $defaults[ $key ] ) {
+				$compact[ $key ] = $args[ $key ];
+			}
+		}
+		return $compact;
+	}
+
+	/**
+	 * Settings every set of buttons on the page shares, for `emoji_reaction.page`.
+	 *
+	 * @return array The emoji list, nonce, user and name limit.
+	 */
+	private function get_page_state(): array {
+		$defaults = $this->get_default_args();
+		return array(
+			'emojis'          => $defaults['emojis'],
+			'nonce'           => $defaults['nonce'],
+			'max_usernames'   => $defaults['max_usernames'],
+			'current_user_id' => $defaults['current_user_id'],
+		);
 	}
 
 	/**

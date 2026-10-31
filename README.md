@@ -74,3 +74,12 @@ The privacy cleanup (reactions of a deleted user) is the only thing that logs. I
 `emoji_reaction_log` with `( $level, $message, $source )` — `$level` being a PSR-3 level — and falls
 back to `error_log()` while nothing is hooked. The plugin knows no logger of its own, so a host with
 one hooks that action.
+
+### The page prints counts, the script rebuilds the state
+
+A page shows a set of buttons per post and comment, and the emoji list, nonce and user are the same in
+each. They go out once, as `emoji_reaction.page`; each `window.emojiReactionData[…]` holds only the
+object, `can_react`, the non-zero `counts`, the user's `voted` emojis and whatever `display_buttons()`
+arguments override (`compact_state()`). `expandState()` in the script turns that back into the full
+state, the shape the AJAX responses still have. A key added to `get_state_data()` that the buttons
+need on first render must go into `compact_state()` too.

@@ -64,6 +64,35 @@
 		return response.json();
 	}
 
+	/**
+	 * The full state of a set of buttons from what the page printed for it.
+	 *
+	 * The page prints only counts and what differs from `emoji_reaction.page`
+	 * (see `compact_state()`); everything else is shared. An emoji with a count
+	 * that is no longer in the list is a legacy one: shown, never offered.
+	 *
+	 * @param {Object} compact State as printed in `window.emojiReactionData`.
+	 * @return {Object} State in the shape the AJAX responses have.
+	 */
+	function expandState(compact) {
+		const { counts = {}, voted = [], ...state } = { ...emoji_reaction.page, ...compact };
+		const entry = (emoji, name) => ({
+			emoji,
+			name,
+			count: counts[emoji] ?? 0,
+			user_voted: voted.includes(emoji),
+			user_names: [],
+			total_users: counts[emoji] ?? 0,
+		});
+		const listed = state.emojis.map(([emoji, name]) => entry(emoji, name));
+		const legacy = Object.keys(counts)
+			.filter((emoji) => !state.emojis.some(([listedEmoji]) => listedEmoji === emoji))
+			.map((emoji) => ({ ...entry(emoji, emoji), legacy: true }));
+		const emojis = [...listed, ...legacy];
+
+		return { ...state, emojis, total_count: emojis.reduce((sum, emoji) => sum + emoji.count, 0) };
+	}
+
 	function votedClass(emoji) {
 		return emoji.user_voted ? 'voted' : 'not-voted';
 	}
@@ -222,7 +251,7 @@
 		initContainer(containerId) {
 			const data = window.emojiReactionData[containerId];
 			if (!data) return;
-			this.containers[containerId] = data;
+			this.containers[containerId] = expandState(data);
 			this.renderContainer(containerId);
 		}
 
