@@ -83,3 +83,7 @@ object, `can_react`, the non-zero `counts`, the user's `voted` emojis and whatev
 arguments override (`compact_state()`). `expandState()` in the script turns that back into the full
 state, the shape the AJAX responses still have. A key added to `get_state_data()` that the buttons
 need on first render must go into `compact_state()` too.
+
+### Asset URLs carry the file's modification time
+
+The public script and stylesheet are versioned by `filemtime()` (`asset_version()`), not by `EMOJI_REACTION_VERSION`, in every environment. A script change that is not paired with a version bump would otherwise stay cached in browsers while the page already prints data in a new shape (as with the compact state above: an old script fails with `Cannot read properties of undefined (reading 'filter')`).

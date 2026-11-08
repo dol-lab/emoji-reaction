@@ -104,21 +104,13 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
-	 * Version for an asset: its modification time while developing, the plugin version otherwise.
+	 * Version for an asset: its modification time, so a changed file gets a new URL without a version bump.
 	 *
 	 * @param string $relative_path Path of the asset, relative to this directory.
 	 *
 	 * @return string Version to append to the asset's URL.
 	 */
 	private function asset_version( string $relative_path ): string {
-		$is_dev_environment = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ||
-						'development' === wp_get_environment_type() ||
-						'local' === wp_get_environment_type();
-
-		if ( ! $is_dev_environment ) {
-			return $this->version;
-		}
-
 		$mtime = @filemtime( plugin_dir_path( __FILE__ ) . $relative_path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a missing file simply falls back to the version.
 
 		return $mtime ? (string) $mtime : $this->version;
