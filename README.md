@@ -57,11 +57,13 @@ Who reacted (the panel `#emoji-reaction-names-popup` and the sheet `#emoji-react
 
 Hooks for styling: `.emoji-reaction-popup` (panel and picker), `.emoji-reaction-names` (panel and sheet, which share their content) and the ids above. Strings the JavaScript shows come from `wp_localize_script( …, 'emoji_reaction', … )`.
 
-### Who reacted: a panel on hover, a sheet on a long press
+### Who reacted: a panel on hover, a sheet on touch
 
-Hovering a reaction (or focusing it with the keyboard) opens the panel at that reaction's tab: "All" and one tab per reaction, the most frequent first. While it has not been clicked into, moving to another reaction switches the tab; a click inside pins it until a click elsewhere or Escape. The list is as tall as the open tab needs (at most 8 rows), and the script places the panel again on a tab change, so its bottom edge stays on the row and only its top moves. Keyboard: ↑/↓ on a reaction moves into the tab bar, the arrow keys switch tabs, Escape or Tab out of the panel returns to the reaction. Hover is `pointerover` with `pointerType === 'mouse'`, so a tap never opens the panel. On touch a long press opens the same content as the sheet; the `touchend` after it is cancelled, or its click would land on the sheet's backdrop and close it again.
+Hovering a reaction (or focusing it with the keyboard) opens the panel at that reaction's tab: "All" and one tab per reaction, the most frequent first; more tabs than fit wrap onto the next line. While it has not been clicked into, moving to another reaction switches the tab; a click inside pins it until a click elsewhere or Escape. The list is as tall as the open tab needs (at most 8 rows), and the script places the panel again on a tab change, so its bottom edge stays on the row and only its top moves. Keyboard: ↑/↓ on a reaction moves into the tab bar, the arrow keys switch tabs, Escape or Tab out of the panel returns to the reaction. Hover is `pointerover` with `pointerType === 'mouse'`, and a mouse click on a reaction toggles it.
 
-The current user is first and reads "You"; each of their reactions there is a button that removes it. Any reaction replaces the state, which drops what was loaded, so the open panel asks again.
+On touch a tap on a reaction does not react: it opens the same content as the sheet (a long press too), because one reaction per user is the default (`emoji_reaction_max_reactions_per_user`) and small pills in a feed get tapped by accident. Reacting happens in the sheet: an emoji's tab starts with "React with ❤️" while the user has not, and their "You" row takes it back. Whether a click is a tap is its `pointerType`, or the last `pointerdown`'s where a click is no `PointerEvent`. After a long press the `touchend` is cancelled, or its click would land on the sheet's backdrop and close it again.
+
+The current user is first and reads "You"; each of their reactions there is a button that removes it. Where the list is not shown (those who may not react), the "You" row still is, so a reaction made before can be taken back. Any reaction replaces the state, which drops what was loaded, so the open panel asks again.
 
 ### Who reacted: only for those who may react, ten at a time
 

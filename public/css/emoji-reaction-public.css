@@ -159,13 +159,12 @@
 }
 
 .emoji-reaction-names {
+	/* Too many kinds of reactions for one line wrap onto the next: nothing hidden, nothing to scroll sideways. */
 	& .emoji-reaction-tabs {
-		position: relative; /* The offset parent the script scrolls a tab into view against. */
 		display: flex;
+		flex-wrap: wrap;
 		gap: 4px;
-		overflow-x: auto;
 		border-bottom: 1px solid var(--_er-border);
-		scrollbar-width: none;
 	}
 
 	& .emoji-reaction-tab {
@@ -320,6 +319,29 @@
 		padding: 0.75rem;
 		color: var(--_er-muted);
 		font-size: 0.85rem;
+	}
+
+	& .emoji-reaction-own {
+		margin: 0;
+		padding: 0 0 4px;
+		list-style: none;
+	}
+
+	& .emoji-reaction-react-row {
+		padding: 4px 0.75rem;
+	}
+
+	& .emoji-reaction-react {
+		width: 100%;
+		height: 2.5rem;
+		margin: 0;
+		border: 1px solid var(--_er-border);
+		border-radius: var(--_er-radius);
+		background: var(--_er-hover);
+		color: var(--_er-text);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
 	}
 }
 

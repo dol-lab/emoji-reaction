@@ -108,22 +108,6 @@
 	}
 
 	/**
-	 * Scrolls a row that scrolls sideways so that one of its children is in view, and nothing else.
-	 *
-	 * @param {HTMLElement} el A child of the row (the row is its offset parent).
-	 */
-	function keepInView(el) {
-		const row = el.parentElement;
-		const start = el.offsetLeft;
-		const end = start + el.offsetWidth;
-		if (start < row.scrollLeft) {
-			row.scrollLeft = start;
-		} else if (end > row.scrollLeft + row.clientWidth) {
-			row.scrollLeft = end - row.clientWidth;
-		}
-	}
-
-	/**
 	 * "I am in the top layer, do not hide me." A react-aria modal marks every
 	 * other child of `<body>` `inert` while it is open, and watches for new ones,
 	 * so a popup opened over one would be painted and then take no clicks at
@@ -466,7 +450,7 @@
 
 			const note = this.noteOf(data);
 			const list = note
-				? `<p class="emoji-reaction-names-note">${esc(note)}</p>`
+				? `<div class="emoji-reaction-names-body"><p class="emoji-reaction-names-note">${esc(note)}</p>${this.buildOwnRow(data, panel)}</div>`
 				: `<ul class="emoji-reaction-reactors" id="${id}-list" role="tabpanel" tabindex="0"
 					aria-labelledby="${id}-tab-${selectedIndex}" style="--rows: ${Math.min(tabs[selectedIndex].count, VISIBLE_ROWS)}"
 				>${this.buildListBody(data, panel)}</ul>`;
@@ -487,21 +471,46 @@
 		}
 
 		/**
+		 * The user's own reactions in the open tab as a "You" row, for where the
+		 * list is not shown: those who may no longer react can still take theirs back.
+		 *
+		 * @param {Object} data  State of the set of buttons.
+		 * @param {Object} panel See `this.panel`.
+		 * @return {string} A list with that row, empty without own reactions.
+		 */
+		buildOwnRow(data, panel) {
+			const own = data.emojis.filter((e) => e.user_voted && (panel.tab === ALL || e.emoji === panel.tab));
+			if (!own.length) return '';
+			const user = { id: data.current_user_id, name: '', avatar: '', emojis: own.map((e) => e.emoji) };
+			return `<ul class="emoji-reaction-own">${this.buildReactorRow(data, user, panel.sheet)}</ul>`;
+		}
+
+		/**
 		 * The rows of the open tab: who has been loaded, then a placeholder for each
 		 * of the next page (the first of them asks for it once it scrolls near).
+		 *
+		 * In the sheet an emoji's tab starts with "React with …" while the user has
+		 * not: on a touch screen tapping a reaction opens the sheet instead of reacting.
 		 *
 		 * @param {Object} data  State of the set of buttons.
 		 * @param {Object} panel See `this.panel`.
 		 * @return {string} `<li>`s.
 		 */
 		buildListBody(data, panel) {
+			const emoji = data.emojis.find((e) => e.emoji === panel.tab);
+			const react =
+				panel.sheet && data.can_react && emoji && !emoji.user_voted
+					? `<li class="emoji-reaction-react-row"><button type="button" class="emoji-reaction-react" data-emoji="${esc(emoji.emoji)}"
+						aria-label="${esc(sprintf(emoji_reaction.react_with, emoji.name))}">${esc(sprintf(emoji_reaction.react_with, emoji.emoji))}</button></li>`
+					: '';
+
 			const reactors = data.reactors;
 			const tab = reactors?.tabs?.[panel.tab];
 			if (reactors?.status !== 'loaded' || !tab) {
 				const count = this.tabsOf(data).find((t) => t.key === panel.tab)?.count ?? 0;
-				return this.buildPlaceholders(Math.min(count, VISIBLE_ROWS));
+				return react + this.buildPlaceholders(Math.min(count, VISIBLE_ROWS));
 			}
-			return tab.users.map((user) => this.buildReactorRow(data, user, panel.sheet)).join('') + this.buildListTail(tab);
+			return react + tab.users.map((user) => this.buildReactorRow(data, user, panel.sheet)).join('') + this.buildListTail(tab);
 		}
 
 		/**
@@ -609,15 +618,13 @@
 				this.names.show(anchor, html);
 			}
 
-			const selected = qs('[role="tab"][aria-selected="true"]', host);
-			if (selected) keepInView(selected);
-			if (hadFocus) selected?.focus();
+			if (hadFocus) qs('[role="tab"][aria-selected="true"]', host)?.focus();
 			this.observeMore(host);
 		}
 
 		/**
 		 * Switches the open panel to another tab. Only the list is drawn again, so
-		 * the tab bar keeps its scroll position and the focus; the panel takes the
+		 * the tab bar keeps the focus; the panel takes the
 		 * new tab's height and is placed again, its bottom edge staying on the row.
 		 *
 		 * @param {string} key ALL or an emoji.
@@ -637,13 +644,16 @@
 				if (isSelected) selected = tab;
 			}
 			const list = qs('.emoji-reaction-reactors', host);
-			if (list && selected) {
+			if (!list) {
+				this.renderPanel();
+				return;
+			}
+			if (selected) {
 				const count = this.tabsOf(data).find((tab) => tab.key === key)?.count ?? 0;
 				list.style.setProperty('--rows', Math.min(count, VISIBLE_ROWS));
 				list.setAttribute('aria-labelledby', selected.id);
 				list.innerHTML = this.buildListBody(data, panel);
 				list.scrollTop = 0;
-				keepInView(selected);
 			}
 			if (!panel.sheet) this.names.position();
 			this.observeMore(host);
@@ -857,6 +867,9 @@
 			if (element.closest(`#${PICKER_POPUP_ID}`) && this.openPicker) {
 				return this.openPicker;
 			}
+			if (element.closest('.emoji-reaction-names') && this.panel) {
+				return this.panel;
+			}
 			return null;
 		}
 
@@ -866,6 +879,7 @@
 			let longPressTimer;
 			let isLongPress = false;
 			let touching = false;
+			let lastPointerType = '';
 			const inFloating = (el) => el.closest?.(`.emoji-reaction-popup, #${NAMES_SHEET_ID}`);
 
 			document.addEventListener('click', (event) => {
@@ -879,7 +893,19 @@
 					}
 					event.preventDefault();
 					event.stopPropagation();
+					// On a touch screen a reaction opens who reacted; reacting happens there.
+					const context = this.contextOf(button);
+					if (context && button.matches('.emoji-reaction-button-popup') && (event.pointerType || lastPointerType) === 'touch') {
+						this.openPanel(context, button.dataset.emoji, true);
+						return;
+					}
 					this.handleEmojiClick(button);
+					return;
+				}
+
+				const react = target.closest('.emoji-reaction-react');
+				if (react) {
+					this.handleEmojiClick(react);
 					return;
 				}
 
@@ -899,7 +925,7 @@
 
 				const remove = target.closest('.emoji-reaction-remove');
 				if (remove && this.panel) {
-					this.sendReaction(this.panel.containerId, remove.dataset.emoji, true);
+					this.handleEmojiClick(remove, true);
 					return;
 				}
 
@@ -926,6 +952,7 @@
 
 			// Clicked into, the panel stays until a click elsewhere or Escape.
 			document.addEventListener('pointerdown', (event) => {
+				lastPointerType = event.pointerType; // For browsers whose click is no PointerEvent.
 				if (this.panel && !this.panel.sheet && this.names.node.contains(event.target)) {
 					this.panel.pinned = true;
 				}
@@ -1116,14 +1143,16 @@
 			qs('.emoji-reaction-button', this.picker.node)?.focus();
 		}
 
-		/** @param {HTMLElement} button A reaction or an emoji of the picker. */
-		handleEmojiClick(button) {
+		/**
+		 * @param {HTMLElement} button A reaction, an emoji of the picker, or a button of who reacted.
+		 * @param {boolean}     isVoted Whether it takes the reaction back (default: the button is `.voted`).
+		 */
+		handleEmojiClick(button, isVoted = button.classList.contains('voted')) {
 			const context = this.contextOf(button);
 			const data = context && this.containers[context.containerId];
 			if (!data) return;
 
 			const emoji = button.dataset.emoji;
-			const isVoted = button.classList.contains('voted');
 
 			if (!isVoted && !data.can_react) {
 				this.showNotification(emoji_reaction.no_permission);
