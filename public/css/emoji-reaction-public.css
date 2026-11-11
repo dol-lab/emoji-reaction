@@ -131,6 +131,106 @@
 	}
 }
 
+/*
+ * Who reacted. The header is there from the first frame; the bars below it
+ * stand in for the names, one each, until they arrive.
+ * Colors derive from `currentColor`, so a theme that restyles the popup keeps
+ * them in tune.
+ */
+.emoji-reaction-names {
+	--names-muted: color-mix(in srgb, currentColor 70%, transparent);
+	min-width: 10rem;
+	padding: 0.45em 0.75em 0.5em;
+	font-size: 0.9rem;
+	line-height: 1.5;
+
+	& .emoji-reaction-names-head {
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
+		font-weight: 600;
+
+		& .emoji {
+			font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+			font-size: 1.15em;
+			font-weight: normal;
+		}
+
+		& .title {
+			display: inline-block;
+
+			&::first-letter {
+				text-transform: uppercase;
+			}
+		}
+
+		& .count {
+			margin-left: auto;
+			padding-left: 0.75em;
+			color: var(--names-muted);
+			font-variant-numeric: tabular-nums;
+		}
+	}
+
+	& .emoji-reaction-names-head + * {
+		margin-top: 0.3em;
+		padding-top: 0.3em;
+		border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+	}
+
+	& .emoji-reaction-usernames li {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* A line of text each, so it is exactly as tall as a name. */
+	& .placeholder {
+		position: relative;
+
+		&::before {
+			content: "";
+			position: absolute;
+			top: calc(50% - 0.3em);
+			left: 0;
+			width: 75%;
+			height: 0.6em;
+			border-radius: 0.3em;
+			background: color-mix(in srgb, currentColor 22%, transparent);
+			animation: emoji-reaction-pulse 1.2s ease-in-out infinite alternate;
+		}
+
+		&:nth-child(3n + 2)::before {
+			width: 55%;
+		}
+
+		&:nth-child(3n)::before {
+			width: 65%;
+		}
+	}
+
+	& .emoji-reaction-names-note {
+		color: var(--names-muted);
+		font-size: 0.85em;
+	}
+
+	& .emoji-reaction-usernames + .emoji-reaction-names-note {
+		margin-top: 0.15em;
+	}
+}
+
+@keyframes emoji-reaction-pulse {
+	to {
+		opacity: 0.45;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.emoji-reaction-names .placeholder::before {
+		animation: none;
+	}
+}
+
 .emoji-reaction-picker {
 	--voted-glow: #3d4aff;
 	padding: 4px;

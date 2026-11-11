@@ -85,8 +85,9 @@ class Emoji_Reaction_Public {
 				'ajax_url'               => admin_url( 'admin-ajax.php' ),
 				'thumbs_down_alert'      => __( "We love constructive feedback! How about a comment on what can be improved instead? Pro tip: start with something positive 😉 \nStill want to continue?", 'emoji-reaction' ),
 				'confirm_remove_no_perm' => __( "Are you sure you want to remove your reaction? You won't be able to add it back later.", 'emoji-reaction' ),
-				'loading'                => __( 'Loading...', 'emoji-reaction' ),
-				'no_permission'          => __( 'Sorry, you do not have permission to react to this content.', 'emoji-reaction' ),
+				'members_only'           => __( 'Only members see who reacted.', 'emoji-reaction' ),
+				'names_failed'           => __( 'Could not load who reacted.', 'emoji-reaction' ),
+				'no_permission'          =>__( 'Sorry, you do not have permission to react to this content.', 'emoji-reaction' ),
 				'request_failed'         => __( 'Unable to update reaction. Please try again.', 'emoji-reaction' ),
 				/* translators: %d: how many more people reacted than are listed. */
 				'and_more'               => __( 'And %d more ...', 'emoji-reaction' ),
@@ -702,7 +703,14 @@ class Emoji_Reaction_Public {
 			return array();
 		}
 
-		$users = get_users( array( 'include' => array_keys( $user_ids ), 'fields' => array( 'ID', 'display_name' ) ) );
+		// Network-wide: somebody who reacted and has since left the site still reacted.
+		$users = get_users(
+			array(
+				'blog_id' => 0,
+				'include' => array_keys( $user_ids ),
+				'fields'  => array( 'ID', 'display_name' ),
+			)
+		);
 
 		$map = array();
 		foreach ( $users as $user ) {

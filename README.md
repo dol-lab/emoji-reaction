@@ -68,6 +68,12 @@ Hooks for styling and behaviour: `.emoji-reaction-popup`, `#emoji-reaction-names
 `#emoji-reaction-picker-popup`. Strings the JavaScript shows come from
 `wp_localize_script( …, 'emoji_reaction', … )`. The `.inverted` class identifies the tooltip.
 
+### Who reacted: only for those who may react
+
+The counts are printed for everyone who sees the post, but `emoji_reaction_ajax_get_usernames` answers only users who pass `user_can_react_to_object()` (`read_post`: on a multisite, members of the site). The script knows this from `can_react` and does not ask: the tooltip shows its header (emoji, name, count) and "Only members see who reacted." Widening that is a privacy decision, not a bug fix.
+
+The tooltip opens with that header at once; the names are fetched when the pointer enters a set of buttons (`prefetchNames()`), and until they arrive one bar per expected name holds their place. A failed request is said in the tooltip and not repeated on every hover. Names are looked up network-wide (`get_users( 'blog_id' => 0 )`): somebody who reacted and has since left the site is still named.
+
 ### Logging goes through `emoji_reaction_log`
 
 The privacy cleanup (reactions of a deleted user) is the only thing that logs. It fires

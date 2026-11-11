@@ -349,35 +349,65 @@
 			return `<div class="item-container" role="group">${items}</div>`;
 		}
 
-		/** The people behind one reaction, or a placeholder while they are fetched. */
+		/**
+		 * Who is behind one reaction: a header known from the start, then the people.
+		 *
+		 * The header lets the popup open at once with something to say. The people
+		 * come from the server, and only for those who may react: everyone else is
+		 * refused, so they are told so instead of being made to wait.
+		 *
+		 * @param {string} containerId Id of the set of buttons.
+		 * @param {string} emojiChar   The reaction.
+		 * @return {string} Content of the popup, empty for none.
+		 */
 		buildNamesHTML(containerId, emojiChar) {
 			const data = this.containers[containerId];
 			const emoji = data?.emojis.find((e) => e.emoji === emojiChar);
-			if (!emoji) {
+			if (!emoji?.count) {
 				return '';
 			}
 
-			// Until they are here. Not "until there are any": a reaction of somebody
-			// who has since been deleted has a count and no name to go with it, and
-			// waiting for that name is waiting forever.
-			if (data.usernames_loading || (!data.usernames_loaded && emoji.count > 0)) {
-				return `<ul class="emoji-reaction-usernames" role="list"><li class="loading">${esc(
-					emoji_reaction.loading
-				)}</li></ul>`;
+			const title = emoji.name === emoji.emoji ? '' : `<span class="title">${esc(emoji.name)}</span>`;
+			const head = `<div class="emoji-reaction-names-head">
+				<span class="emoji" aria-hidden="true">${esc(emoji.emoji)}</span>${title}
+				<span class="count">${esc(emoji.count)}</span>
+			</div>`;
+
+			return head + this.buildNamesBody(data, emoji);
+		}
+
+		/**
+		 * The part of the popup below its header.
+		 *
+		 * Until the names are here, one bar holds the place of each name to come, so
+		 * the popup keeps its size instead of swapping a word for a list. With nobody
+		 * left to name (all deleted since), the header stands alone.
+		 *
+		 * @param {Object} data  State of the set of buttons.
+		 * @param {Object} emoji The reaction.
+		 * @return {string} Markup, empty when there is nobody to name.
+		 */
+		buildNamesBody(data, emoji) {
+			const note = (text) => `<p class="emoji-reaction-names-note">${esc(text)}</p>`;
+
+			if (!data.can_react) {
+				return note(emoji_reaction.members_only);
+			}
+			if (data.usernames_failed) {
+				return note(emoji_reaction.names_failed);
+			}
+			if (!data.usernames_loaded) {
+				const bars = '<li class="placeholder">&nbsp;</li>'.repeat(Math.min(emoji.count, data.max_usernames));
+				return `<ul class="emoji-reaction-usernames" role="list" aria-busy="true">${bars}</ul>`;
 			}
 
 			const names = (emoji.user_names ?? [])
 				.map((user) => `<li data-user-id="${esc(user.id)}">${esc(user.name)}</li>`)
 				.join('');
-
-			if (!names) {
-				return ''; // Nobody left to name: no popup either.
-			}
-
 			const moreCount = emoji.total_users - data.max_usernames;
-			const more = moreCount > 0 ? `<p>${esc(sprintf(emoji_reaction.and_more, moreCount))}</p>` : '';
+			const more = moreCount > 0 ? note(sprintf(emoji_reaction.and_more, moreCount)) : '';
 
-			return `<ul class="emoji-reaction-usernames" role="list">${names}</ul>${more}`;
+			return (names ? `<ul class="emoji-reaction-usernames" role="list">${names}</ul>` : '') + more;
 		}
 
 		// --- Opening and closing ---
@@ -406,8 +436,26 @@
 			this.openNames = { containerId, emoji: emojiChar, wrapper };
 			this.names.show(anchor, html);
 			anchor.setAttribute('aria-describedby', NAMES_POPUP_ID);
+			this.prefetchNames(containerId);
+		}
 
-			if (!data.usernames_loaded && !data.usernames_loading) {
+		/**
+		 * Fetches who reacted, once, if there is anybody and the server would say.
+		 *
+		 * Called as soon as the pointer is over a set of buttons, so the names are
+		 * usually here before the popup opens.
+		 *
+		 * @param {string} containerId Id of the set of buttons.
+		 */
+		prefetchNames(containerId) {
+			const data = this.containers[containerId];
+			if (
+				data?.can_react &&
+				data.total_count > 0 &&
+				!data.usernames_loaded &&
+				!data.usernames_loading &&
+				!data.usernames_failed
+			) {
 				this.fetchUsernames(containerId);
 			}
 		}
@@ -524,6 +572,11 @@
 			// Hover over a reaction: who reacted. The pointer may travel into the
 			// popup itself, which is why it is not closed until it has left both.
 			document.addEventListener('mouseover', (event) => {
+				const wrapper = event.target.closest('.emoji-reaction-wrapper');
+				if (wrapper) {
+					this.prefetchNames(wrapper.id);
+				}
+
 				const button = event.target.closest('.emoji-reaction-button-popup');
 				clearTimeout(this.hoverTimer);
 
@@ -552,6 +605,8 @@
 					const button = event.target.closest('.emoji-reaction-button-popup');
 					if (!button) return;
 
+					const context = this.contextOf(button);
+					if (context) this.prefetchNames(context.containerId);
 					isLongPress = false;
 					longPressTimer = setTimeout(() => {
 						isLongPress = true;
@@ -644,24 +699,18 @@
 
 				data.usernames_loading = false;
 				if (!result.success || !result.data?.state_data) {
-					if (this.openNames?.containerId === containerId) {
-						this.hideNames();
-					}
-					return;
+					throw new Error(result.data?.message ?? 'No state in the response');
 				}
 
 				const newState = result.data.state_data;
 				newState.usernames_loaded = true;
 				this.containers[containerId] = newState;
-
-				this.refreshNames(containerId);
 			} catch (error) {
 				console.error('fetchUsernames failed', error);
 				data.usernames_loading = false;
-				if (this.openNames?.containerId === containerId) {
-					this.hideNames(); // Rather than a spinner that never stops.
-				}
+				data.usernames_failed = true; // Said in the popup, not asked again on every hover.
 			}
+			this.refreshNames(containerId);
 		}
 
 		async sendReaction(containerId, emoji, unlike) {

@@ -199,3 +199,11 @@ msgstr "Deine Reaktion konnte nicht entfernt werden."
 #, fuzzy
 msgid "Your reaction could not be saved."
 msgstr "Deine Reaktion konnte nicht gespeichert werden."
+
+#: public/class-emoji-reaction-public.php
+msgid "Only members see who reacted."
+msgstr "Nur Mitglieder sehen, wer reagiert hat."
+
+#: public/class-emoji-reaction-public.php
+msgid "Could not load who reacted."
+msgstr "Konnte nicht laden, wer reagiert hat."
