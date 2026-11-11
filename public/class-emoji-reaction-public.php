@@ -43,6 +43,12 @@ class Emoji_Reaction_Public {
 	 */
 	private string $meta_key;
 
+	/** @var int People per request of the list of who reacted. */
+	private const REACTORS_PER_PAGE = 10;
+
+	/** @var int Pixel size of the avatars in that list: twice their CSS size, for high-density screens. */
+	private const AVATAR_SIZE = 48;
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -87,10 +93,18 @@ class Emoji_Reaction_Public {
 				'confirm_remove_no_perm' => __( "Are you sure you want to remove your reaction? You won't be able to add it back later.", 'emoji-reaction' ),
 				'members_only'           => __( 'Only members see who reacted.', 'emoji-reaction' ),
 				'names_failed'           => __( 'Could not load who reacted.', 'emoji-reaction' ),
-				'no_permission'          =>__( 'Sorry, you do not have permission to react to this content.', 'emoji-reaction' ),
+				'who_reacted'            => __( 'Who reacted', 'emoji-reaction' ),
+				'all'                    => __( 'All', 'emoji-reaction' ),
+				'all_reactions'          => __( 'All reactions', 'emoji-reaction' ),
+				'you'                    => __( 'You', 'emoji-reaction' ),
+				'anonymous'              => __( 'Anonymous', 'emoji-reaction' ),
+				'click_to_remove'        => __( 'Click to remove', 'emoji-reaction' ),
+				'tap_to_remove'          => __( 'Tap to remove', 'emoji-reaction' ),
+				/* translators: %s: emoji name. */
+				'remove_reaction'        => __( 'Remove your reaction %s', 'emoji-reaction' ),
+				'close'                  => __( 'Close', 'emoji-reaction' ),
+				'no_permission'          => __( 'Sorry, you do not have permission to react to this content.', 'emoji-reaction' ),
 				'request_failed'         => __( 'Unable to update reaction. Please try again.', 'emoji-reaction' ),
-				/* translators: %d: how many more people reacted than are listed. */
-				'and_more'               => __( 'And %d more ...', 'emoji-reaction' ),
 				'add_reaction'           => __( 'Add new reaction', 'emoji-reaction' ),
 				'choose_reaction'        => __( 'Choose reaction', 'emoji-reaction' ),
 				/* translators: 1: name of the emoji, 2: how many people reacted with it. */
@@ -100,6 +114,21 @@ class Emoji_Reaction_Public {
 				'react_with'             => __( 'React with %s', 'emoji-reaction' ),
 				'currently_selected'     => __( 'currently selected', 'emoji-reaction' ),
 				'page'                   => $this->get_page_state(),
+				/**
+				 * Classes a host adds to parts of the "who reacted" sheet (the dialog it is on a touch screen),
+				 * to make it one of its own modals.
+				 *
+				 * @param array $classes Space-separated classes for 'sheet' (the `<dialog>`), 'sheet_header'
+				 *                       (the tab bar) and 'sheet_close' (the close button).
+				 */
+				'classes'                => apply_filters(
+					'emoji_reaction_part_classes',
+					array(
+						'sheet'        => '',
+						'sheet_header' => '',
+						'sheet_close'  => '',
+					)
+				),
 			)
 		);
 	}
@@ -127,9 +156,7 @@ class Emoji_Reaction_Public {
 			'type'            => 'post',
 			'ID'              => get_the_ID(),
 			'align'           => 'left',
-			'usernames'       => 10,
 			'emojis'          => apply_filters( 'emoji_reaction_emojis', Emoji_Reaction::get_default_emojis() ),
-			'max_usernames'   => 10,
 			'current_user_id' => get_current_user_id(),
 			'nonce'           => wp_create_nonce( '_emoji_reaction_action' ),
 		);
@@ -190,7 +217,7 @@ class Emoji_Reaction_Public {
 				$compact['voted'][] = $emoji['emoji'];
 			}
 		}
-		foreach ( array( 'emojis', 'nonce', 'max_usernames', 'current_user_id' ) as $key ) {
+		foreach ( array( 'emojis', 'nonce', 'current_user_id' ) as $key ) {
 			if ( $args[ $key ] !== $defaults[ $key ] ) {
 				$compact[ $key ] = $args[ $key ];
 			}
@@ -201,14 +228,13 @@ class Emoji_Reaction_Public {
 	/**
 	 * Settings every set of buttons on the page shares, for `emoji_reaction.page`.
 	 *
-	 * @return array The emoji list, nonce, user and name limit.
+	 * @return array The emoji list, nonce and user.
 	 */
 	private function get_page_state(): array {
 		$defaults = $this->get_default_args();
 		return array(
 			'emojis'          => $defaults['emojis'],
 			'nonce'           => $defaults['nonce'],
-			'max_usernames'   => $defaults['max_usernames'],
 			'current_user_id' => $defaults['current_user_id'],
 		);
 	}
@@ -223,30 +249,15 @@ class Emoji_Reaction_Public {
 	 *
 	 * @return  array  Complete state data.
 	 */
-	private function get_state_data( $object_id, $object_type, $args, $include_usernames = false ) {
+	private function get_state_data( $object_id, $object_type, $args ) {
 		$likes           = $this->get_reactions( $object_id, $object_type );
 		$emojis          = is_array( $args['emojis'] ) ? $args['emojis'] : array();
 		$current_user_id = $args['current_user_id'];
-		$max_usernames   = $args['max_usernames'];
 
-		// Pre-fetch all usernames in one query if needed
-		$user_name_map = array();
-		if ( $include_usernames ) {
-			$user_name_map = $this->get_user_names_bulk( $likes, $max_usernames );
-		}
-
-		// Process each configured emoji
 		$emoji_data = array();
 		foreach ( $emojis as $emoji ) {
 			$user_ids     = isset( $likes[ $emoji[0] ] ) ? array_values( $likes[ $emoji[0] ] ) : array();
-			$emoji_data[] = $this->build_emoji_entry(
-				$emoji[0],
-				$emoji[1],
-				$user_ids,
-				$current_user_id,
-				$max_usernames,
-				$user_name_map
-			);
+			$emoji_data[] = $this->build_emoji_entry( $emoji[0], $emoji[1], $user_ids, $current_user_id );
 		}
 
 		// Show legacy reactions that exist in the DB but are no longer in the active emoji list
@@ -256,14 +267,7 @@ class Emoji_Reaction_Public {
 				continue;
 			}
 
-			$entry           = $this->build_emoji_entry(
-				$emoji_char,
-				$emoji_char,
-				array_values( $user_ids_map ),
-				$current_user_id,
-				$max_usernames,
-				$user_name_map
-			);
+			$entry           = $this->build_emoji_entry( $emoji_char, $emoji_char, array_values( $user_ids_map ), $current_user_id );
 			$entry['legacy'] = true;
 			$emoji_data[]    = $entry;
 		}
@@ -273,7 +277,6 @@ class Emoji_Reaction_Public {
 			'object_type'     => $object_type,
 			'nonce'           => $args['nonce'],
 			'align'           => $args['align'],
-			'max_usernames'   => $max_usernames,
 			'total_count'     => $this->get_reaction_count( $likes ),
 			'emojis'          => $emoji_data,
 			'current_user_id' => $current_user_id,
@@ -304,44 +307,136 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
-	 * Handles fetching usernames via ajax.
+	 * Who reacted, one page per tab: 'all' and each emoji.
 	 *
-	 * @return  void
+	 * Without `tab` it answers the first page of every tab, so switching tabs needs no request; with
+	 * `tab` and `offset` the next page of that one.
+	 *
+	 * @return void
 	 */
-	public function emoji_reaction_ajax_get_usernames() {
+	public function emoji_reaction_ajax_get_reactors() {
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'You must be logged in to view reactions.' ), 401 );
 		}
-
-		// Check if required POST data exists
 		if ( ! isset( $_POST['nonce'], $_POST['object_id'], $_POST['object_type'] ) ) {
 			wp_send_json_error( array( 'message' => 'Missing required data.' ), 400 );
 		}
-
-		// Verify nonce for CSRF protection
-		if ( ! wp_verify_nonce( wp_unslash( $_POST['nonce'] ), '_emoji_reaction_action' ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), '_emoji_reaction_action' ) ) {
 			wp_send_json_error( array( 'message' => 'Security check failed.' ), 401 );
 		}
 
 		$object_id   = intval( $_POST['object_id'] );
 		$object_type = sanitize_text_field( wp_unslash( $_POST['object_type'] ) );
+		$tab         = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;
+		$offset      = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
 
 		if ( ! in_array( $object_type, array( 'post', 'comment' ), true ) || $object_id <= 0 ) {
 			wp_send_json_error( array( 'message' => 'Invalid parameters.' ), 400 );
 		}
-
-		// Check user permissions
 		if ( ! $this->user_can_react_to_object( $object_id, $object_type ) ) {
 			wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
 		}
 
-		$default_args                    = $this->get_default_args();
-		$default_args['current_user_id'] = get_current_user_id();
+		$likes = $this->get_reactions( $object_id, $object_type );
+		$lists = $this->get_reactor_lists( $likes, get_current_user_id() );
+		if ( null !== $tab ) {
+			$lists = array_intersect_key( $lists, array( $tab => true ) );
+		}
 
-		// Get state data WITH usernames
-		$state_data = $this->get_state_data( $object_id, $object_type, $default_args, true );
+		$pages = array();
+		foreach ( $lists as $key => $user_ids ) {
+			$pages[ $key ] = array_slice( $user_ids, null === $tab ? 0 : $offset, self::REACTORS_PER_PAGE );
+		}
+		$users = $this->get_reactor_users( array_unique( array_merge( array(), ...array_values( $pages ) ) ) );
 
-		wp_send_json_success( array( 'state_data' => $state_data ) );
+		$emojis_of = array();
+		foreach ( $likes as $emoji => $user_ids ) {
+			foreach ( $user_ids as $user_id ) {
+				$emojis_of[ (int) $user_id ][] = (string) $emoji;
+			}
+		}
+
+		$tabs = array();
+		foreach ( $pages as $key => $user_ids ) {
+			$tabs[ $key ] = array(
+				'total' => count( $lists[ $key ] ),
+				'users' => array_map(
+					fn( $user_id ) => $users[ $user_id ] + array( 'emojis' => 'all' === $key ? $emojis_of[ $user_id ] : array( (string) $key ) ),
+					$user_ids
+				),
+			);
+		}
+
+		wp_send_json_success( array( 'tabs' => $tabs ) );
+	}
+
+	/**
+	 * Who reacted, in the order the list shows them: the current user first, then the most recent.
+	 *
+	 * @param array $likes           Reactions as get_reactions() returns them, newest first.
+	 * @param int   $current_user_id The user who asks.
+	 *
+	 * @return array<string, int[]> User ids per tab: 'all' (each person once) and each emoji.
+	 */
+	private function get_reactor_lists( array $likes, int $current_user_id ): array {
+		$latest = array();
+		$lists  = array();
+		foreach ( $likes as $emoji => $user_ids ) {
+			$lists[ (string) $emoji ] = array_values( $this->uid_to_first_position( array_values( $user_ids ), $current_user_id ) );
+			foreach ( $user_ids as $time => $user_id ) {
+				$latest[ (int) $user_id ] = max( $latest[ (int) $user_id ] ?? 0, (int) $time );
+			}
+		}
+		arsort( $latest );
+
+		return array( 'all' => array_values( $this->uid_to_first_position( array_keys( $latest ), $current_user_id ) ) ) + $lists;
+	}
+
+	/**
+	 * Name and avatar of each user, looked up network-wide: somebody who reacted and has since left the site still reacted.
+	 *
+	 * A user who no longer exists gets no name (the script says "Anonymous") and no avatar.
+	 *
+	 * @param int[] $user_ids Users to look up.
+	 *
+	 * @return array<int, array{id: int, name: string, avatar: string}> Users by id.
+	 */
+	private function get_reactor_users( array $user_ids ): array {
+		$users = array();
+		foreach ( $user_ids as $user_id ) {
+			$users[ $user_id ] = array(
+				'id'     => $user_id,
+				'name'   => '',
+				'avatar' => '',
+			);
+		}
+		if ( ! $user_ids ) {
+			return $users;
+		}
+
+		/**
+		 * Fires before the avatars of these users are looked up, so a host can load them in one go.
+		 *
+		 * @param int[] $user_ids The users.
+		 * @param int   $size     Pixel size of the avatars.
+		 */
+		do_action( 'emoji_reaction_reactors', $user_ids, self::AVATAR_SIZE );
+
+		$show_avatars = get_option( 'show_avatars' );
+		$found        = get_users(
+			array(
+				'blog_id' => 0,
+				'include' => $user_ids,
+			)
+		);
+		foreach ( $found as $user ) {
+			$users[ $user->ID ]['name'] = sanitize_text_field( $user->display_name );
+			if ( $show_avatars ) {
+				$users[ $user->ID ]['avatar'] = (string) get_avatar_url( $user, array( 'size' => self::AVATAR_SIZE ) );
+			}
+		}
+
+		return $users;
 	}
 
 	/**
@@ -507,29 +602,15 @@ class Emoji_Reaction_Public {
 	 * @param string $emoji_name      Display name for the emoji.
 	 * @param int[]  $user_ids        User IDs who reacted with this emoji.
 	 * @param int    $current_user_id Current user's ID.
-	 * @param int    $max_usernames   Max usernames to include.
-	 * @param array  $user_name_map    Pre-fetched map of user ID => display name (empty array to skip).
 	 *
 	 * @return array Emoji entry data.
 	 */
-	private function build_emoji_entry( $emoji_char, $emoji_name, $user_ids, $current_user_id, $max_usernames, $user_name_map ) {
-		$user_names = array();
-		if ( ! empty( $user_name_map ) ) {
-			foreach ( array_slice( $user_ids, 0, $max_usernames ) as $user_id ) {
-				$user_names[] = array(
-					'id'   => $user_id,
-					'name' => $user_name_map[ $user_id ] ?? __( 'Anonymous', 'emoji-reaction' ),
-				);
-			}
-		}
-
+	private function build_emoji_entry( $emoji_char, $emoji_name, $user_ids, $current_user_id ) {
 		return array(
-			'emoji'       => $emoji_char,
-			'name'        => $emoji_name,
-			'count'       => count( $user_ids ),
-			'user_voted'  => in_array( $current_user_id, $user_ids ),
-			'user_names'  => $user_names,
-			'total_users' => count( $user_ids ),
+			'emoji'      => $emoji_char,
+			'name'       => $emoji_name,
+			'count'      => count( $user_ids ),
+			'user_voted' => in_array( (int) $current_user_id, array_map( 'intval', $user_ids ), true ),
 		);
 	}
 
@@ -680,44 +761,6 @@ class Emoji_Reaction_Public {
 		}
 
 		return $count;
-	}
-
-	/**
-	 * Get display names for all users across all emoji reactions in one query.
-	 *
-	 * @param array $likes           All reactions keyed by emoji => [ timestamp => user_id ].
-	 * @param int   $max_per_emoji   Max usernames to resolve per emoji.
-	 *
-	 * @return array Map of user_id => display_name.
-	 */
-	private function get_user_names_bulk( $likes, $max_per_emoji ) {
-		// Collect unique user IDs (only those that will actually be displayed)
-		$user_ids = array();
-		foreach ( $likes as $emoji_user_ids ) {
-			foreach ( array_slice( array_values( $emoji_user_ids ), 0, $max_per_emoji ) as $uid ) {
-				$user_ids[ $uid ] = true;
-			}
-		}
-
-		if ( empty( $user_ids ) ) {
-			return array();
-		}
-
-		// Network-wide: somebody who reacted and has since left the site still reacted.
-		$users = get_users(
-			array(
-				'blog_id' => 0,
-				'include' => array_keys( $user_ids ),
-				'fields'  => array( 'ID', 'display_name' ),
-			)
-		);
-
-		$map = array();
-		foreach ( $users as $user ) {
-			$map[ (int) $user->ID ] = sanitize_text_field( $user->display_name );
-		}
-
-		return $map;
 	}
 
 	/**

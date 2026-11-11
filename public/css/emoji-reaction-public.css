@@ -1,9 +1,35 @@
 /**
  * CSS for public-facing functionality.
+ *
+ * A host themes the buttons and popups with a few custom properties, set on
+ * any ancestor (or on `.emoji-reaction-wrapper`, `.emoji-reaction-popup` and
+ * `.emoji-reaction-sheet`, where they resolve per element):
+ * `--emoji-reaction-surface`, `-text`, `-muted`, `-border`, `-hover`,
+ * `-accent`, `-radius`, `-shadow`, `-avatar-size` and `-avatar-radius`.
+ * Unset, they fall back to the values below; the shades derive from the text
+ * color, so setting it alone keeps them in tune.
  */
 
+.emoji-reaction-wrapper,
+.emoji-reaction-popup,
+.emoji-reaction-sheet {
+	--_er-text: var(--emoji-reaction-text, light-dark(#1b1c1d, #e6e6e6));
+	--_er-surface: var(--emoji-reaction-surface, light-dark(#fff, #222326));
+	--_er-muted: var(--emoji-reaction-muted, color-mix(in srgb, var(--_er-text) 62%, transparent));
+	--_er-border: var(--emoji-reaction-border, color-mix(in srgb, var(--_er-text) 12%, transparent));
+	--_er-hover: var(--emoji-reaction-hover, color-mix(in srgb, var(--_er-text) 7%, transparent));
+	--_er-accent: var(--emoji-reaction-accent, #3d4aff);
+	--_er-radius: var(--emoji-reaction-radius, 8px);
+	--_er-shadow: var(--emoji-reaction-shadow, 0 4px 16px rgb(0 0 0 / 0.14));
+	--_er-avatar: var(--emoji-reaction-avatar-size, 24px);
+	--_er-avatar-radius: var(--emoji-reaction-avatar-radius, 50%);
+	--_er-row: 2.5rem;
+	--_er-emoji-font: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+/* --- The buttons under a post or comment --- */
+
 .emoji-reaction-wrapper {
-	--voted-glow: #3d4aff;
 	display: flex;
 	flex-direction: row-reverse;
 	gap: 2px;
@@ -20,7 +46,7 @@
 		gap: 2px;
 		flex-wrap: wrap;
 
-		button[data-count="0"] {
+		& button[data-count="0"] {
 			display: none;
 		}
 	}
@@ -31,33 +57,35 @@
 		border: none;
 
 		&.emoji-reaction-button {
-			border-radius: 3px;
+			border-radius: var(--_er-radius);
 			height: 24px;
-			padding: 0 4px;
-			transition: background-color 0.3s, box-shadow 0.3s;
+			padding: 0 5px;
+			transition: background-color 0.2s, box-shadow 0.2s;
 			display: flex;
 			align-items: center;
+			-webkit-touch-callout: none; /* A long press shows who reacted. */
+			user-select: none;
 
 			&:hover {
-				background-color: #eaeaea;
+				background-color: var(--_er-hover);
 			}
 
 			&.voted {
-				box-shadow: 0 0 1px var(--voted-glow),
-					0 0 4px color-mix(in oklab, transparent, var(--voted-glow) 24%);
+				box-shadow: 0 0 1px var(--_er-accent), 0 0 4px color-mix(in oklab, transparent, var(--_er-accent) 24%);
 			}
 
-			&:before {
+			&::before {
 				content: attr(data-emoji);
-				font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+				font-family: var(--_er-emoji-font) !important;
 			}
 
-			&:not([data-count="1"]):after {
+			&:not([data-count="1"])::after {
 				content: attr(data-count);
 				margin-left: 0.1rem;
 				font-size: 0.8rem;
-				color: #888;
+				color: var(--_er-muted);
 				margin-top: 0.15rem;
+				font-variant-numeric: tabular-nums;
 			}
 		}
 	}
@@ -78,144 +106,281 @@
 			display: inline-block;
 		}
 	}
-
 }
 
 /**
- * The two popups: who reacted, and the picker.
+ * The popups: who reacted (the panel) and the picker.
  *
  * Both are single nodes at the end of <body>, shown with the Popover API and
  * placed by the script in window coordinates, so `left` / `top` are set inline.
- * `.is-open` is what the script toggles; it also carries the ones without the
- * Popover API, where the `popover` attribute means nothing and the element
- * would otherwise simply sit at the bottom of the page.
+ * `.is-open` is what the script toggles.
  */
 .emoji-reaction-popup {
 	position: fixed;
 	inset: auto;
-	margin: 0;
 	z-index: 10000;
 	display: none;
-	max-width: min(20rem, calc(100vw - 2rem));
-	padding: 0.3em 0.6em;
-	border: 1px solid rgba(0, 0, 0, 0.15);
-	border-radius: 4px;
-	background: #fff;
-	color: #1b1c1d;
-	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
-	overflow: visible;
+	box-sizing: border-box;
+	max-width: calc(100vw - 16px);
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 1px solid var(--_er-border);
+	border-radius: var(--_er-radius);
+	background: var(--_er-surface);
+	color: var(--_er-text);
+	box-shadow: var(--_er-shadow);
+	font-size: 0.9rem;
+	line-height: 1.4;
 
 	&.is-open {
 		display: block;
-	}
+		transition: opacity 0.12s, translate 0.12s;
 
-	&.inverted {
-		border-color: transparent;
-		background: #1b1c1d;
-		color: #fff;
-	}
-
-	& ul,
-	& p {
-		font-size: 0.9rem;
-	}
-
-	& ul {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	& p {
-		margin: 0;
+		@starting-style {
+			opacity: 0;
+			translate: 0 4px;
+		}
 	}
 }
 
+/* --- Who reacted: the same content in the panel and in the sheet --- */
+
 /*
- * Who reacted. The header is there from the first frame; the bars below it
- * stand in for the names, one each, until they arrive.
- * Colors derive from `currentColor`, so a theme that restyles the popup keeps
- * them in tune.
+ * Rules a host's modal may override (the sheet's tab bar and list) sit behind
+ * `:where()`, so a class it adds wins without fighting specificity.
  */
+:where(.emoji-reaction-names) .emoji-reaction-tabs {
+	padding: 6px;
+}
+
+:where(.emoji-reaction-names) .emoji-reaction-reactors {
+	height: calc(var(--rows, 8) * var(--_er-row) + 8px); /* The open tab's rows, set by the script. */
+}
+
 .emoji-reaction-names {
-	--names-muted: color-mix(in srgb, currentColor 70%, transparent);
-	min-width: 10rem;
-	padding: 0.45em 0.75em 0.5em;
-	font-size: 0.9rem;
-	line-height: 1.5;
-
-	& .emoji-reaction-names-head {
+	& .emoji-reaction-tabs {
+		position: relative; /* The offset parent the script scrolls a tab into view against. */
 		display: flex;
-		align-items: center;
-		gap: 0.4em;
-		font-weight: 600;
+		gap: 4px;
+		overflow-x: auto;
+		border-bottom: 1px solid var(--_er-border);
+		scrollbar-width: none;
+	}
 
-		& .emoji {
-			font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-			font-size: 1.15em;
-			font-weight: normal;
+	& .emoji-reaction-tab {
+		flex: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		height: 1.875rem;
+		margin: 0;
+		padding: 0 0.6rem;
+		border: 0;
+		border-radius: var(--_er-radius);
+		background: transparent;
+		color: var(--_er-muted);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--_er-hover);
+			color: var(--_er-text);
 		}
 
-		& .title {
-			display: inline-block;
+		&[aria-selected="true"] {
+			background: color-mix(in srgb, var(--_er-text) 11%, transparent);
+			color: var(--_er-text);
+		}
 
-			&::first-letter {
-				text-transform: uppercase;
-			}
+		& .emoji {
+			font-family: var(--_er-emoji-font);
+			font-size: 1.15em;
+			font-weight: normal;
+			line-height: 1;
 		}
 
 		& .count {
-			margin-left: auto;
-			padding-left: 0.75em;
-			color: var(--names-muted);
 			font-variant-numeric: tabular-nums;
 		}
 	}
 
-	& .emoji-reaction-names-head + * {
-		margin-top: 0.3em;
-		padding-top: 0.3em;
-		border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+	& .emoji-reaction-reactors {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 4px 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		list-style: none;
 	}
 
-	& .emoji-reaction-usernames li {
-		white-space: nowrap;
+	& :focus-visible {
+		outline: 2px solid var(--_er-accent);
+		outline-offset: -2px;
+	}
+
+	& .emoji-reaction-reactor,
+	& .placeholder {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		box-sizing: border-box;
+		height: var(--_er-row);
+		margin: 0;
+		padding: 0 0.75rem;
+	}
+
+	& .emoji-reaction-avatar,
+	& .placeholder::before {
+		flex: none;
+		width: var(--_er-avatar);
+		height: var(--_er-avatar);
+		border-radius: var(--_er-avatar-radius);
+		background: var(--_er-hover);
+	}
+
+	& .emoji-reaction-avatar {
+		display: grid;
+		place-items: center;
+		object-fit: cover;
+		color: var(--_er-muted);
+		font-size: 0.7rem;
+		font-weight: 600;
+	}
+
+	& .name {
+		flex: 1;
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		& small {
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			color: var(--_er-muted);
+			font-size: 0.75rem;
+			line-height: 1.2;
+		}
 	}
 
-	/* A line of text each, so it is exactly as tall as a name. */
+	& .emojis {
+		flex: none;
+		display: flex;
+		gap: 2px;
+		font-family: var(--_er-emoji-font);
+		font-size: 1.15rem;
+		line-height: 1;
+	}
+
+	& .emoji-reaction-remove {
+		height: 1.75rem;
+		margin: 0;
+		padding: 0 0.25rem;
+		border: 0;
+		border-radius: var(--_er-radius);
+		background: transparent;
+		font: inherit;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--_er-hover);
+		}
+	}
+
+	/* A row each, as tall as a name, so the list keeps its size when the names arrive. */
 	& .placeholder {
-		position: relative;
+		animation: emoji-reaction-pulse 1.2s ease-in-out infinite alternate;
 
 		&::before {
 			content: "";
-			position: absolute;
-			top: calc(50% - 0.3em);
-			left: 0;
-			width: 75%;
+		}
+
+		&::after {
+			content: "";
+			width: 55%;
 			height: 0.6em;
 			border-radius: 0.3em;
-			background: color-mix(in srgb, currentColor 22%, transparent);
-			animation: emoji-reaction-pulse 1.2s ease-in-out infinite alternate;
+			background: var(--_er-border);
 		}
 
-		&:nth-child(3n + 2)::before {
-			width: 55%;
+		&:nth-child(3n + 2)::after {
+			width: 40%;
 		}
 
-		&:nth-child(3n)::before {
-			width: 65%;
+		&:nth-child(3n)::after {
+			width: 48%;
 		}
 	}
 
 	& .emoji-reaction-names-note {
-		color: var(--names-muted);
-		font-size: 0.85em;
+		margin: 0;
+		padding: 0.75rem;
+		color: var(--_er-muted);
+		font-size: 0.85rem;
+	}
+}
+
+/* The panel keeps its width, whichever tab is open. */
+.emoji-reaction-popup.emoji-reaction-names {
+	width: 18rem;
+}
+
+/*
+ * The sheet (touch). A plain bottom sheet by default; a host makes it one of
+ * its own modals through the `emoji_reaction_part_classes` filter, and its
+ * classes win over the `:where()` rules here.
+ */
+:where(.emoji-reaction-sheet) {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 32rem;
+	max-height: 75dvh;
+	margin: auto auto 0;
+	padding: 0;
+	border: 1px solid var(--_er-border);
+	border-bottom: 0;
+	border-radius: var(--_er-radius) var(--_er-radius) 0 0;
+	background: var(--_er-surface);
+	color: var(--_er-text);
+	box-shadow: var(--_er-shadow);
+
+	&::backdrop {
+		background: rgb(0 0 0 / 0.25);
 	}
 
-	& .emoji-reaction-usernames + .emoji-reaction-names-note {
-		margin-top: 0.15em;
+	& .emoji-reaction-tabs {
+		padding-inline-end: 3rem; /* Clear of the close button. */
+	}
+}
+
+:where(.emoji-reaction-sheet-close) {
+	position: absolute;
+	top: 0.25rem;
+	right: 0.25rem;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 0;
+	background: transparent;
+	color: var(--_er-muted);
+	font-size: 1.5rem;
+	cursor: pointer;
+}
+
+.emoji-reaction-sheet {
+	--_er-row: 3rem;
+
+	&[open] {
+		display: flex;
+		flex-direction: column;
+	}
+
+	& > .emoji-reaction-reactors {
+		flex: 1 1 auto;
+		min-height: 0;
+		height: auto;
 	}
 }
 
@@ -225,54 +390,57 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.emoji-reaction-names .placeholder::before {
-		animation: none;
-	}
-}
+/* --- The picker --- */
 
 .emoji-reaction-picker {
-	--voted-glow: #3d4aff;
-	padding: 4px;
+	padding: 6px;
 
 	& .item-container {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
-		gap: 3px;
-		padding: 4px;
+		gap: 2px;
 	}
 
 	& .emoji-reaction-button {
-		cursor: pointer;
-		border: none;
-		border-radius: 3px;
-		background: transparent;
-		height: 24px;
-		padding: 0 4px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		min-width: 2.5rem;
+		height: 2.25rem;
+		margin: 0;
+		padding: 0;
+		border: none;
+		border-radius: var(--_er-radius);
+		background: transparent;
+		font-size: 1.3rem;
+		cursor: pointer;
 
-		&:hover {
-			background-color: #eaeaea;
+		&::before {
+			content: attr(data-emoji);
+			font-family: var(--_er-emoji-font) !important;
+			transition: scale 0.15s;
 		}
 
-		&:focus {
-			outline: 2px solid #005fcc;
-			outline-offset: 1px;
+		&:hover {
+			background-color: var(--_er-hover);
+
+			&::before {
+				scale: 1.15;
+			}
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--_er-accent);
+			outline-offset: -2px;
 		}
 
 		&.voted {
-			box-shadow: 0 0 1px var(--voted-glow),
-				0 0 4px color-mix(in oklab, transparent, var(--voted-glow) 24%);
-		}
-
-		&:before {
-			content: attr(data-emoji);
-			font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+			background-color: color-mix(in srgb, var(--_er-accent) 14%, transparent);
 		}
 	}
 }
+
+/* --- Notifications --- */
 
 .emoji-reaction-notification {
 	position: fixed;
@@ -347,8 +515,14 @@
 
 /* Reduced motion support for accessibility */
 @media (prefers-reduced-motion: reduce) {
-	.emoji-reaction-wrapper button {
+	.emoji-reaction-wrapper button,
+	.emoji-reaction-popup,
+	.emoji-reaction-picker .emoji-reaction-button::before {
 		transition: none;
+	}
+
+	.emoji-reaction-names .placeholder {
+		animation: none;
 	}
 
 	.emoji-reaction-notification {

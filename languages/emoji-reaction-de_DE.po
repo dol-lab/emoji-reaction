@@ -207,3 +207,36 @@ msgstr "Nur Mitglieder sehen, wer reagiert hat."
 #: public/class-emoji-reaction-public.php
 msgid "Could not load who reacted."
 msgstr "Konnte nicht laden, wer reagiert hat."
+
+#: public/class-emoji-reaction-public.php
+msgid "Who reacted"
+msgstr "Wer reagiert hat"
+
+#: public/class-emoji-reaction-public.php
+msgid "All"
+msgstr "Alle"
+
+#: public/class-emoji-reaction-public.php
+msgid "All reactions"
+msgstr "Alle Reaktionen"
+
+#: public/class-emoji-reaction-public.php
+msgid "You"
+msgstr "Du"
+
+#: public/class-emoji-reaction-public.php
+msgid "Click to remove"
+msgstr "Zum Entfernen klicken"
+
+#: public/class-emoji-reaction-public.php
+msgid "Tap to remove"
+msgstr "Zum Entfernen tippen"
+
+#. translators: %s: emoji name.
+#: public/class-emoji-reaction-public.php
+msgid "Remove your reaction %s"
+msgstr "Deine Reaktion %s entfernen"
+
+#: public/class-emoji-reaction-public.php
+msgid "Close"
+msgstr "Schließen"

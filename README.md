@@ -21,7 +21,6 @@ If you don't want to echo the result use the function `emoji_reaction_get_button
 - **'ID'** (int) The post or comment ID. Default is the value of 'get_the_ID' function.
 - **'type'** (string) The type of object. Accepts 'post' or 'comment'. Default 'post'.
 - **'align'** (string) Alignment of emoji buttons. Accepts 'left' or 'right'. Default 'left'.
-- **'usernames'** (int) Max number of usernames shown in tooltip. Default 10.
 
 ---
 
@@ -46,9 +45,7 @@ Be aware: if you remove an emoji, the saved likes according to this emoji will r
 
 ## Dependencies
 
-None. The buttons, the list of who reacted and the emoji picker are plain JavaScript
-(no jQuery, no UI framework), using the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API)
-for the two popups. Where that is missing, the buttons keep working and only the popups stay closed.
+None. The buttons, the list of who reacted and the emoji picker are plain JavaScript (no jQuery, no UI framework), using the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API) for the popups and a `<dialog>` for the sheet. Where the Popover API is missing, the buttons keep working and only the popups stay closed.
 
 ---
 
@@ -56,23 +53,27 @@ for the two popups. Where that is missing, the buttons keep working and only the
 
 ### One popup node per page, not one per button
 
-The "who reacted" tooltip and the emoji picker are two single nodes appended to `<body>`, both
-`popover="manual"`, placed by hand above the anchor button with their right edges aligned, and closed
-on outside click, Escape, scroll or resize. One node each is deliberate: the same post is rendered more
-than once on some pages, so per-container popups collided on their ids.
+Who reacted (the panel `#emoji-reaction-names-popup` and the sheet `#emoji-reaction-names-sheet`) and the emoji picker (`#emoji-reaction-picker-popup`) are single nodes appended to `<body>`. The panel and the picker are `popover="manual"`, placed by hand above their anchor with the right edges aligned, and closed on outside click, Escape, page scroll or resize; the sheet is a `<dialog>` opened with `showModal()`. One node each is deliberate: the same post is rendered more than once on some pages, so per-container popups collided on their ids. All three carry `data-react-aria-top-layer`, so they remain interactive when opened from a React Aria modal.
 
-The popups use `data-react-aria-top-layer` so they remain interactive when opened from a React Aria
-modal.
+Hooks for styling: `.emoji-reaction-popup` (panel and picker), `.emoji-reaction-names` (panel and sheet, which share their content) and the ids above. Strings the JavaScript shows come from `wp_localize_script( …, 'emoji_reaction', … )`.
 
-Hooks for styling and behaviour: `.emoji-reaction-popup`, `#emoji-reaction-names-popup`,
-`#emoji-reaction-picker-popup`. Strings the JavaScript shows come from
-`wp_localize_script( …, 'emoji_reaction', … )`. The `.inverted` class identifies the tooltip.
+### Who reacted: a panel on hover, a sheet on a long press
 
-### Who reacted: only for those who may react
+Hovering a reaction (or focusing it with the keyboard) opens the panel at that reaction's tab: "All" and one tab per reaction, the most frequent first. While it has not been clicked into, moving to another reaction switches the tab; a click inside pins it until a click elsewhere or Escape. The list is as tall as the open tab needs (at most 8 rows), and the script places the panel again on a tab change, so its bottom edge stays on the row and only its top moves. Keyboard: ↑/↓ on a reaction moves into the tab bar, the arrow keys switch tabs, Escape or Tab out of the panel returns to the reaction. Hover is `pointerover` with `pointerType === 'mouse'`, so a tap never opens the panel. On touch a long press opens the same content as the sheet; the `touchend` after it is cancelled, or its click would land on the sheet's backdrop and close it again.
 
-The counts are printed for everyone who sees the post, but `emoji_reaction_ajax_get_usernames` answers only users who pass `user_can_react_to_object()` (`read_post`: on a multisite, members of the site). The script knows this from `can_react` and does not ask: the tooltip shows its header (emoji, name, count) and "Only members see who reacted." Widening that is a privacy decision, not a bug fix.
+The current user is first and reads "You"; each of their reactions there is a button that removes it. Any reaction replaces the state, which drops what was loaded, so the open panel asks again.
 
-The tooltip opens with that header at once; the names are fetched when the pointer enters a set of buttons (`prefetchNames()`), and until they arrive one bar per expected name holds their place. A failed request is said in the tooltip and not repeated on every hover. Names are looked up network-wide (`get_users( 'blog_id' => 0 )`): somebody who reacted and has since left the site is still named.
+### Who reacted: only for those who may react, ten at a time
+
+The counts are printed for everyone who sees the post, but `emoji_reaction_ajax_get_reactors` answers only users who pass `user_can_react_to_object()` (`read_post`: on a multisite, members of the site). The script knows this from `can_react` and does not ask: the tabs show the counts and the list says "Only members see who reacted." Widening that is a privacy decision, not a bug fix.
+
+The first request (`prefetch()`, as soon as the pointer enters a set of buttons) answers the first 10 of every tab, so switching tabs needs none. A placeholder row holds the place of each of the next page; an `IntersectionObserver` on the first of them asks for the next 10 of that tab once it scrolls within about a row, so the two rows loaded beyond the visible eight are scrolled to first. A failed request is said in the list and not repeated on every hover. Users are looked up network-wide (`get_users( 'blog_id' => 0 )`): somebody who reacted and has since left the site is still named; a deleted user is "Anonymous" without an avatar. Avatars come from `get_avatar_url()` (only with `show_avatars` on), which costs about two queries per user unless a host primes them: the plugin fires `emoji_reaction_reactors` ( `$user_ids`, `$size` ) first for that (Spaces hooks `spaces_prime_users()`).
+
+### Theming: custom properties and part classes
+
+The stylesheet reads `--emoji-reaction-surface`, `-text`, `-muted`, `-border`, `-hover`, `-accent`, `-radius`, `-shadow`, `-avatar-size` and `-avatar-radius`, with plain defaults (`light-dark()`, so a site that declares `color-scheme` gets a dark default). Set them on `.emoji-reaction-wrapper, .emoji-reaction-popup, .emoji-reaction-sheet` when their values are themselves custom properties that change below `:root`: a custom property resolves where it is declared.
+
+The filter `emoji_reaction_part_classes` adds classes to the sheet (`sheet`, `sheet_header` for the tab bar, `sheet_close`), so a host can make it one of its own modals. The sheet's own box rules are behind `:where()`, so those classes win. Its content is laid out for that: the tab bar first, the list (the scroll container the observer watches) as its sibling, the close button last.
 
 ### Logging goes through `emoji_reaction_log`
 
