@@ -2,7 +2,7 @@
 
 A Wordpress plugin which allows emoji reactions on posts and comments by logged in users.
 
-- Version: 0.7.0
+- Version: 0.8.0
 - WordPress Version: 4.2 or higher
 - Tested up to: 5.9.3
 - License: GPL-2.0+
@@ -14,6 +14,7 @@ A Wordpress plugin which allows emoji reactions on posts and comments by logged 
 
 Display emoji buttons in your theme with the function `emoji_reaction_display_buttons(array $args)` or the action `do_action('emoji_reaction_display_buttons', array $args)`.
 If you don't want to echo the result use the function `emoji_reaction_get_buttons(array $args)`.
+Markup inserted after the page loaded needs nothing from the host: the buttons come up however it is inserted.
 
 **$args**
 (array) (Required) An array of settings.
@@ -87,11 +88,13 @@ one hooks that action.
 ### The page prints counts, the script rebuilds the state
 
 A page shows a set of buttons per post and comment, and the emoji list, nonce and user are the same in
-each. They go out once, as `emoji_reaction.page`; each `window.emojiReactionData[…]` holds only the
+each. They go out once, as `emoji_reaction.page`; each set's `data-emoji-reaction` holds only the
 object, `can_react`, the non-zero `counts`, the user's `voted` emojis and whatever `display_buttons()`
 arguments override (`compact_state()`). `expandState()` in the script turns that back into the full
 state, the shape the AJAX responses still have. A key added to `get_state_data()` that the buttons
 need on first render must go into `compact_state()` too.
+
+The state is an attribute, not an inline script: markup a host inserts later (`innerHTML`, `DOMParser`, a framework) does not run its scripts, and such sets would stay empty. `init()` renders every set that still has the attribute and removes it, and a `MutationObserver` on `<body>` calls it again when such a set is added. Removing it matters: after a reaction the script's state is newer than the attribute, and rendering from the attribute again would undo the reaction on screen. A set printed again comes from the server with the state as it is now, so it replaces the script's. `init()` can be called any time; it is never needed.
 
 ### Asset URLs carry the file's modification time
 

@@ -290,25 +290,22 @@ class Emoji_Reaction_Public {
 	}
 
 	/**
-	 * Render simple display container with inline state data.
+	 * Render the empty container of a set of buttons, carrying its state for the script.
 	 *
+	 * The state is an attribute, not an inline script: markup a host inserts later (`innerHTML`,
+	 * `DOMParser`) runs no scripts, and the script finds the attribute however the markup came.
 	 *
-	 * @param array $state_data Complete state data.
+	 * @param array $state_data Compact state data, see compact_state().
 	 */
-	private function render_simple_display( $state_data ) {
-		$container_id = 'emoji-reaction-' . $state_data['object_type'] . '-' . $state_data['object_id'];
-
-		// Add semantic wrapper with proper ARIA attributes
-		echo '<section class="emoji-reaction-wrapper ' . esc_attr( $state_data['align'] ) . '" id="' . esc_attr( $container_id ) . '" role="group" aria-label="' . esc_attr( __( 'Emoji reactions', 'emoji-reaction' ) ) . '" ></section>';
-
-		// Output inline script with state data
-		echo '<script type="text/javascript">';
-		echo 'window.emojiReactionData = window.emojiReactionData || {};';
-		echo 'window.emojiReactionData[' . wp_json_encode( $container_id ) . '] = ' . wp_json_encode( $state_data ) . ';';
-		echo 'if (window.EmojiReaction && window.EmojiReaction.initContainer) {';
-		echo '  window.EmojiReaction.initContainer(' . wp_json_encode( $container_id ) . ');';
-		echo '}';
-		echo '</script>';
+	private function render_simple_display( array $state_data ): void {
+		printf(
+			'<section class="emoji-reaction-wrapper %s" id="%s" role="group" aria-label="%s" data-emoji-reaction="%s"></section>',
+			esc_attr( $state_data['align'] ),
+			esc_attr( 'emoji-reaction-' . $state_data['object_type'] . '-' . $state_data['object_id'] ),
+			esc_attr__( 'Emoji reactions', 'emoji-reaction' ),
+			// No `&` in the JSON: esc_attr() leaves an `&amp;` in a value as it is, and the browser would decode it.
+			esc_attr( wp_json_encode( $state_data, JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG ) )
+		);
 	}
 
 	/**

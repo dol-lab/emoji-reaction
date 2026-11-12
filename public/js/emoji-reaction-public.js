@@ -29,6 +29,7 @@
 	const NAMES_SHEET_ID = 'emoji-reaction-names-sheet';
 	const PICKER_POPUP_ID = 'emoji-reaction-picker-popup';
 	const ALL = 'all';
+	const STATE = 'data-emoji-reaction'; // A set's state as the server printed it, until read.
 
 	const GAP = 6; // Between a button and its popup.
 	const EDGE = 8; // How close to the edge of the window a popup may come.
@@ -78,7 +79,7 @@
 	 * (see `compact_state()`); everything else is shared. An emoji with a count
 	 * that is no longer in the list is a legacy one: shown, never offered.
 	 *
-	 * @param {Object} compact State as printed in `window.emojiReactionData`.
+	 * @param {Object} compact State as printed in `data-emoji-reaction`.
 	 * @return {Object} State in the shape the AJAX responses have.
 	 */
 	function expandState(compact) {
@@ -249,17 +250,33 @@
 			this.returningFocus = false;
 		}
 
+		/**
+		 * Render the sets of buttons the page has not rendered yet. Safe to call again.
+		 *
+		 * Each carries its state in `data-emoji-reaction`, removed once read: what a set shows after
+		 * a reaction is newer than what the page printed. A set printed again (the same post in a
+		 * list and a modal) comes from the server and is as new, so it replaces the state.
+		 */
 		init() {
-			if (window.emojiReactionData) {
-				for (const id of Object.keys(window.emojiReactionData)) {
-					this.initContainer(id);
-				}
-			}
 			if (!this.eventsSetup) {
 				this.setupPopups();
 				this.setupEventListeners();
+				// Sets inserted later, however a host inserts them.
+				new MutationObserver((records) => {
+					const added = (node) => node.nodeType === Node.ELEMENT_NODE && (node.matches(`[${STATE}]`) || qs(`[${STATE}]`, node));
+					if (records.some((record) => [...record.addedNodes].some(added))) this.init();
+				}).observe(document.body, { childList: true, subtree: true });
 				this.eventsSetup = true;
 			}
+
+			const ids = new Set();
+			for (const el of qsa(`[${STATE}]`)) {
+				const state = el.getAttribute(STATE);
+				el.removeAttribute(STATE);
+				this.containers[el.id] = expandState(JSON.parse(state));
+				ids.add(el.id);
+			}
+			ids.forEach((id) => this.renderContainer(id));
 		}
 
 		setupPopups() {
@@ -287,14 +304,6 @@
 				role: 'menu',
 				'aria-label': emoji_reaction.choose_reaction,
 			});
-		}
-
-		/** @param {string} containerId Id of the set of buttons. */
-		initContainer(containerId) {
-			const data = window.emojiReactionData[containerId];
-			if (!data) return;
-			this.containers[containerId] = expandState(data);
-			this.renderContainer(containerId);
 		}
 
 		/** @param {string} containerId Id of the set of buttons. */
@@ -1302,6 +1311,4 @@
 	} else {
 		start();
 	}
-	window.addEventListener('load', start);
-	window.addEventListener('new-content', start);
 })();
