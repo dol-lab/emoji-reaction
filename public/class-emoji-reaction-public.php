@@ -100,6 +100,8 @@ class Emoji_Reaction_Public {
 				'anonymous'              => __( 'Anonymous', 'emoji-reaction' ),
 				'click_to_remove'        => __( 'Click to remove', 'emoji-reaction' ),
 				'tap_to_remove'          => __( 'Tap to remove', 'emoji-reaction' ),
+				'click_emoji_to_remove'  => __( 'Click an emoji to remove it', 'emoji-reaction' ),
+				'tap_emoji_to_remove'    => __( 'Tap an emoji to remove it', 'emoji-reaction' ),
 				/* translators: %s: emoji name. */
 				'remove_reaction'        => __( 'Remove your reaction %s', 'emoji-reaction' ),
 				'close'                  => __( 'Close', 'emoji-reaction' ),
@@ -119,14 +121,17 @@ class Emoji_Reaction_Public {
 				 * to make it one of its own modals.
 				 *
 				 * @param array $classes Space-separated classes for 'sheet' (the `<dialog>`), 'sheet_header'
-				 *                       (the tab bar) and 'sheet_close' (the close button).
+				 *                       (the tab bar), 'sheet_close' (the close button), 'notification' (the
+				 *                       toast) and 'notification_close' (its close button).
 				 */
 				'classes'                => apply_filters(
 					'emoji_reaction_part_classes',
 					array(
-						'sheet'        => '',
-						'sheet_header' => '',
-						'sheet_close'  => '',
+						'sheet'              => '',
+						'sheet_header'       => '',
+						'sheet_close'        => '',
+						'notification'       => '',
+						'notification_close' => '',
 					)
 				),
 			)

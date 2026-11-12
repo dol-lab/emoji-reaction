@@ -23,9 +23,8 @@
 	const HOVER_HIDE_MS = 300; // Long enough to cross from a button into the panel.
 	const VISIBLE_ROWS = 8;
 	const NOTIFICATION_TIMEOUT_MS = 5000;
-	const DISMISS_ANIMATION_MS = 300;
-	const NOTIFICATION_ID = 'emoji-reaction-limit-notification';
-	const TOAST_CONTAINER_ID = 'toast-container';
+	const DISMISS_ANIMATION_MS = 200;
+	const TOASTS_ID = 'emoji-reaction-toasts';
 	const NAMES_POPUP_ID = 'emoji-reaction-names-popup';
 	const NAMES_SHEET_ID = 'emoji-reaction-names-sheet';
 	const PICKER_POPUP_ID = 'emoji-reaction-picker-popup';
@@ -432,6 +431,10 @@
 		 * VISIBLE_ROWS rows), placeholders included, so it keeps its size while the
 		 * people arrive.
 		 *
+		 * With one kind of reaction "All" and its tab are the same people, and the
+		 * button already shows the count: no tab bar then. The sheet keeps a plain
+		 * title in its place, its header row.
+		 *
 		 * @param {Object} data  State of the set of buttons.
 		 * @param {Array}  tabs  See tabsOf().
 		 * @param {Object} panel See `this.panel`.
@@ -440,6 +443,7 @@
 		 */
 		buildPanelHTML(data, tabs, panel, id) {
 			const headerClass = panel.sheet ? (emoji_reaction.classes?.sheet_header ?? '') : '';
+			const single = tabs.length === 2;
 			const tabButtons = tabs
 				.map((tab, i) => {
 					const selected = tab.key === panel.tab;
@@ -454,15 +458,21 @@
 				})
 				.join('');
 			const selectedIndex = tabs.findIndex((tab) => tab.key === panel.tab);
+			const labelledBy = single ? `aria-label="${esc(tabs[selectedIndex].label)}"` : `aria-labelledby="${id}-tab-${selectedIndex}"`;
 
 			const note = this.noteOf(data);
 			const list = note
 				? `<div class="emoji-reaction-names-body"><p class="emoji-reaction-names-note">${esc(note)}</p>${this.buildOwnRow(data, panel)}</div>`
-				: `<ul class="emoji-reaction-reactors" id="${id}-list" role="tabpanel" tabindex="0"
-					aria-labelledby="${id}-tab-${selectedIndex}" style="--rows: ${Math.min(tabs[selectedIndex].count, VISIBLE_ROWS)}"
+				: `<ul class="emoji-reaction-reactors" id="${id}-list" role="${single ? 'list' : 'tabpanel'}" tabindex="0"
+					${labelledBy} style="--rows: ${Math.min(tabs[selectedIndex].count, VISIBLE_ROWS)}"
+					${single && panel.sheet ? 'autofocus' : ''}
 				>${this.buildListBody(data, panel)}</ul>`;
 
-			return `<div class="emoji-reaction-tabs ${esc(headerClass)}" role="tablist" aria-label="${esc(emoji_reaction.who_reacted)}">${tabButtons}</div>${list}`;
+			if (!single) {
+				return `<div class="emoji-reaction-tabs ${esc(headerClass)}" role="tablist" aria-label="${esc(emoji_reaction.who_reacted)}">${tabButtons}</div>${list}`;
+			}
+			const title = panel.sheet ? `<h2 class="emoji-reaction-names-title ${esc(headerClass)}">${esc(emoji_reaction.who_reacted)}</h2>` : '';
+			return title + list;
 		}
 
 		/**
@@ -540,8 +550,9 @@
 		}
 
 		/**
-		 * One person: avatar, name and their reactions. The current user is "You",
-		 * and each of their reactions is a button that takes it back.
+		 * One person: avatar, name and their reactions. The current user is "You":
+		 * with one reaction the whole row is the button that takes it back, with
+		 * more each emoji is one.
 		 *
 		 * @param {Object}  data  State of the set of buttons.
 		 * @param {Object}  user  `{id, name, avatar, emojis}` from the server.
@@ -560,16 +571,18 @@
 			}
 
 			const nameOf = (char) => data.emojis.find((e) => e.emoji === char)?.name ?? char;
-			const buttons = user.emojis
-				.map(
-					(char) =>
-						`<button type="button" class="emoji-reaction-remove" data-emoji="${esc(char)}"
-							aria-label="${esc(sprintf(emoji_reaction.remove_reaction, nameOf(char)))}">${esc(char)}</button>`
-				)
-				.join('');
-			const hint = sheet ? emoji_reaction.tap_to_remove : emoji_reaction.click_to_remove;
+			const removeAttrs = (char) =>
+				`type="button" data-emoji="${esc(char)}" aria-label="${esc(sprintf(emoji_reaction.remove_reaction, nameOf(char)))}"`;
+			const hint = (one) => esc(emoji_reaction[`${sheet ? 'tap' : 'click'}_${one ? '' : 'emoji_'}to_remove`]);
 
-			return `<li class="emoji-reaction-reactor is-you">${avatar}<span class="name">${esc(name)}<small>${esc(hint)}</small></span><span class="emojis">${buttons}</span></li>`;
+			if (user.emojis.length === 1) {
+				const [char] = user.emojis;
+				return `<li class="emoji-reaction-reactor is-you"><button class="emoji-reaction-remove-row" ${removeAttrs(char)}>${avatar}<span class="name">${esc(name)}<small>${hint(true)}</small></span><span class="emojis">${esc(char)}</span></button></li>`;
+			}
+			const buttons = user.emojis
+				.map((char) => `<button class="emoji-reaction-remove" ${removeAttrs(char)}>${esc(char)}</button>`)
+				.join('');
+			return `<li class="emoji-reaction-reactor is-you">${avatar}<span class="name">${esc(name)}<small>${hint(false)}</small></span><span class="emojis">${buttons}</span></li>`;
 		}
 
 		// --- Who reacted ---
@@ -604,7 +617,9 @@
 			this.prefetch(panel.containerId);
 
 			const tabs = this.tabsOf(data);
-			if (!tabs.some((tab) => tab.key === panel.tab && tab.count > 0)) {
+			if (tabs.length === 2) {
+				panel.tab = tabs[1].key; // Its tab, not "All": the sheet offers to react with it there.
+			} else if (!tabs.some((tab) => tab.key === panel.tab && tab.count > 0)) {
 				panel.tab = ALL;
 			}
 
@@ -625,8 +640,17 @@
 				this.names.show(anchor, html);
 			}
 
-			if (hadFocus) qs('[role="tab"][aria-selected="true"]', host)?.focus();
+			if (hadFocus) this.focusPanel(host);
 			this.observeMore(host);
+		}
+
+		/**
+		 * Focuses who reacted where the keyboard starts in it: the open tab, else the list.
+		 *
+		 * @param {HTMLElement} host The panel or the sheet.
+		 */
+		focusPanel(host) {
+			qs('[role="tab"][aria-selected="true"], .emoji-reaction-reactors, .emoji-reaction-names-body button', host)?.focus();
 		}
 
 		/**
@@ -930,7 +954,7 @@
 					return;
 				}
 
-				const remove = target.closest('.emoji-reaction-remove');
+				const remove = target.closest('.emoji-reaction-remove, .emoji-reaction-remove-row');
 				if (remove && this.panel) {
 					this.handleEmojiClick(remove, true);
 					return;
@@ -1093,7 +1117,7 @@
 				if (this.panel?.wrapper !== context.wrapper) this.openPanel(context, target.dataset.emoji);
 				if (!this.panel) return;
 				this.panel.pinned = true;
-				qs('[role="tab"][aria-selected="true"]', this.names.node)?.focus();
+				this.focusPanel(this.names.node);
 				return;
 			}
 
@@ -1232,41 +1256,39 @@
 
 		/** @param {HTMLElement} el The notification. */
 		dismissNotification(el) {
-			el.style.animation = 'slideOutToRight 0.3s ease-in';
+			el.classList.add('is-leaving');
 			setTimeout(() => el.remove(), DISMISS_ANIMATION_MS);
 		}
 
-		/** @param {string} message What to say. */
+		/**
+		 * Shows a message at the bottom of the screen, replacing the one before. The live
+		 * region stays on the page, so a screen reader announces what goes into it.
+		 *
+		 * @param {string} message What to say.
+		 */
 		showNotification(message) {
-			document.getElementById(NOTIFICATION_ID)?.remove();
-
-			const notification = document.createElement('div');
-			notification.id = NOTIFICATION_ID;
-			notification.className = 'emoji-reaction-notification';
-			notification.innerHTML = `
-				<div class="emoji-reaction-notification-content">
-					<span class="emoji-reaction-notification-icon" aria-disabled>ℹ️</span>
-					<span class="emoji-reaction-notification-text">${esc(message)}</span>
-					<button class="emoji-reaction-notification-close" type="button">&times;</button>
-				</div>`;
-
-			let toast = document.getElementById(TOAST_CONTAINER_ID);
-			if (!toast) {
-				toast = document.createElement('div');
-				toast.id = TOAST_CONTAINER_ID;
-				toast.setAttribute('aria-live', 'polite');
-				document.body.appendChild(toast);
+			const classes = emoji_reaction.classes ?? {};
+			let region = document.getElementById(TOASTS_ID);
+			if (!region) {
+				region = document.createElement('div');
+				region.id = TOASTS_ID;
+				region.className = 'emoji-reaction-toasts';
+				region.setAttribute('role', 'status');
+				document.body.append(region);
 			}
-			toast.appendChild(notification);
+
+			region.innerHTML = `<div class="emoji-reaction-notification ${esc(classes.notification ?? '')}">
+				<p class="emoji-reaction-notification-text">${esc(message)}</p>
+				<button type="button" class="emoji-reaction-notification-close ${esc(classes.notification_close ?? '')}"
+					aria-label="${esc(emoji_reaction.close)}"><span aria-hidden="true">&times;</span></button>
+			</div>`;
+			const notification = region.firstElementChild;
 
 			qs('.emoji-reaction-notification-close', notification).addEventListener('click', () =>
 				this.dismissNotification(notification)
 			);
-
 			setTimeout(() => {
-				if (notification.isConnected) {
-					this.dismissNotification(notification);
-				}
+				if (notification.isConnected) this.dismissNotification(notification);
 			}, NOTIFICATION_TIMEOUT_MS);
 		}
 	}

@@ -232,6 +232,14 @@ msgstr "Zum Entfernen klicken"
 msgid "Tap to remove"
 msgstr "Zum Entfernen tippen"
 
+#: public/class-emoji-reaction-public.php
+msgid "Click an emoji to remove it"
+msgstr "Zum Entfernen auf ein Emoji klicken"
+
+#: public/class-emoji-reaction-public.php
+msgid "Tap an emoji to remove it"
+msgstr "Zum Entfernen auf ein Emoji tippen"
+
 #. translators: %s: emoji name.
 #: public/class-emoji-reaction-public.php
 msgid "Remove your reaction %s"
