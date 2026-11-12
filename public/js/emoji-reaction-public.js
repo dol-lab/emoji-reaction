@@ -108,19 +108,25 @@
 	}
 
 	/**
-	 * "I am in the top layer, do not hide me." A react-aria modal marks every
-	 * other child of `<body>` `inert` while it is open, and watches for new ones,
-	 * so a popup opened over one would be painted and then take no clicks at
-	 * all. This is the attribute its `ariaHideOutside()` checks for, the same way
-	 * it exempts its own overlays.
-	 *
 	 * @param {HTMLElement} node A popup.
 	 * @return {HTMLElement} The same node, appended to `<body>`.
 	 */
 	function appendToTopLayer(node) {
-		node.dataset.reactAriaTopLayer = 'true';
 		document.body.append(node);
 		return node;
+	}
+
+	/**
+	 * Moves a popup into the modal its anchor is in (first, clear of the modal's
+	 * rules for its last child): a modal `<dialog>` makes the rest of the page
+	 * inert, so a popup outside it would show and take no clicks.
+	 *
+	 * @param {HTMLElement} node   A popup.
+	 * @param {HTMLElement} anchor What it opens from.
+	 */
+	function moveBeside(node, anchor) {
+		const host = anchor.closest('dialog:modal') ?? document.body;
+		if (node.parentElement !== host) host.prepend(node);
 	}
 
 	// --- Popups ---
@@ -173,6 +179,7 @@
 			if (!this.isOpen) {
 				this.node.style.visibility = 'hidden'; // Placed before it is seen anywhere.
 				this.node.classList.add('is-open');
+				moveBeside(this.node, anchor);
 				this.node.showPopover();
 			}
 			this.position();

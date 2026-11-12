@@ -53,7 +53,7 @@ None. The buttons, the list of who reacted and the emoji picker are plain JavaSc
 
 ### One popup node per page, not one per button
 
-Who reacted (the panel `#emoji-reaction-names-popup` and the sheet `#emoji-reaction-names-sheet`) and the emoji picker (`#emoji-reaction-picker-popup`) are single nodes appended to `<body>`. The panel and the picker are `popover="manual"`, placed by hand above their anchor with the right edges aligned, and closed on outside click, Escape, page scroll or resize; the sheet is a `<dialog>` opened with `showModal()`. One node each is deliberate: the same post is rendered more than once on some pages, so per-container popups collided on their ids. All three carry `data-react-aria-top-layer`, so they remain interactive when opened from a React Aria modal.
+Who reacted (the panel `#emoji-reaction-names-popup` and the sheet `#emoji-reaction-names-sheet`) and the emoji picker (`#emoji-reaction-picker-popup`) are single nodes appended to `<body>`. The panel and the picker are `popover="manual"`, placed by hand above their anchor with the right edges aligned, and closed on outside click, Escape, page scroll or resize; the sheet is a `<dialog>` opened with `showModal()`. One node each is deliberate: the same post is rendered more than once on some pages, so per-container popups collided on their ids. The panel and the picker move into the modal `<dialog>` their anchor is in when they open: a modal makes the rest of the page inert, so outside it they would show and take no clicks.
 
 Hooks for styling: `.emoji-reaction-popup` (panel and picker), `.emoji-reaction-names` (panel and sheet, which share their content) and the ids above. Strings the JavaScript shows come from `wp_localize_script( …, 'emoji_reaction', … )`.
 
